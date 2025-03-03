@@ -1,101 +1,157 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useEffect, useState } from 'react';
+import { fetchBranchQueueStatus, bookQueueNumber, cancelQueue, checkUserQueue } from '@/lib/supabaseApi';
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa'; // Add icons for status
+
+interface Branch {
+  id: string;
+  name: string;
+  currentNumber: number;
+  queuing: number;
+  crowdStatus: string;
+  isFull: boolean;
+}
+
+const HomePage = () => {
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [userQueue, setUserQueue] = useState<string | null>(null);  // New state to track user's current queue
+
+  useEffect(() => {
+    const getBranchQueueStatus = async () => {
+      try {
+        const data = await fetchBranchQueueStatus();
+        if (!data || data.length === 0) {
+          setError('No branches found');
+        }
+        setBranches(data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching branch queue status', error);
+        setError('Failed to load branches. Please try again later.');
+        setLoading(false);
+      }
+    };
+    getBranchQueueStatus();
+  }, []);
+
+  useEffect(() => {
+    // Fetch the user's current queue when the component mounts
+    const fetchUserQueue = async () => {
+      // Replace with actual user ID (this is an example)
+      const userId = "some-unique-user-id"; 
+      const existingQueue = await checkUserQueue(userId);
+      setUserQueue(existingQueue);
+    };
+    fetchUserQueue();
+  }, []);
+
+  const handleTakeNumber = async (branchId: string) => {
+    try {
+      // Replace with actual user ID
+      const userId = "some-unique-user-id";
+      const queueNumber = await bookQueueNumber(branchId, userId);
+      setUserQueue(queueNumber.toString());
+      alert(`Your queue number is: ${queueNumber}`);
+    } catch (error) {
+      console.error('Error booking queue', error);
+      alert('Error booking queue. Please try again later.');
+    }
+  };
+
+  const handleCancelQueue = async () => {
+    try {
+      // Replace with actual user ID
+      const userId = "some-unique-user-id";
+      await cancelQueue(userId);
+      setUserQueue(null);
+      alert('Your queue has been canceled.');
+    } catch (error) {
+      console.error('Error canceling queue', error);
+      alert('Error canceling queue. Please try again later.');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-indigo-900 to-blue-800 text-white">
+        <p className="text-xl text-gray-400">Loading...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-indigo-900 to-blue-800 text-white">
+        <p className="text-lg text-red-500">{error}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="container mx-auto mt-10 lg:mt-20 p-6 bg-gradient-to-r from-indigo-900 to-blue-800 text-white rounded-lg shadow-lg">
+      <h1 className="text-5xl font-semibold text-center text-white mb-8">Available Branches</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {branches.length === 0 ? (
+        <p className="text-lg text-center text-gray-300">No branches available</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {branches.map((branch) => {
+            const numberWaiting = branch.queuing;
+            const crowdStatus = numberWaiting >= 15 ? 'Crowded 🚨' : 'Not Crowded ✅';
+
+            return (
+              <div key={branch.id} className="bg-gray-800 p-6 rounded-lg shadow-xl transform transition-all hover:scale-105 hover:shadow-2xl">
+                <h2 className="text-2xl font-bold text-white">{branch.name}</h2>
+                <div className="mt-4 text-sm text-gray-300">
+                  <div className="flex justify-between">
+                    <span>Current Number:</span>
+                    <span>{branch.currentNumber}</span>
+                  </div>
+                  <div className="flex justify-between mt-2">
+                    <span>Number Waiting:</span>
+                    <span>{numberWaiting}</span>
+                  </div>
+                  <div className="flex justify-between mt-2">
+                    <span>Status:</span>
+                    <span className={`${numberWaiting >= 15 ? 'text-red-500' : 'text-green-500'}`}>
+                      {numberWaiting >= 15 ? <FaTimesCircle className="inline" /> : <FaCheckCircle className="inline" />}
+                      {crowdStatus}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-center">
+                  {userQueue ? (
+                    <button
+                      onClick={handleCancelQueue}
+                      className="px-6 py-3 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 transform hover:scale-105 transition duration-300 ease-in-out"
+                    >
+                      Cancel Number
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleTakeNumber(branch.id)}
+                      disabled={branch.isFull}
+                      className={`px-6 py-3 rounded-lg font-medium text-white transition duration-300 ease-in-out ${
+                        branch.isFull
+                          ? 'bg-gray-600 cursor-not-allowed'
+                          : 'bg-blue-600 hover:bg-blue-700 transform hover:scale-105'
+                      }`}
+                      aria-disabled={branch.isFull ? 'true' : 'false'}
+                    >
+                      {branch.isFull ? 'Fully Booked' : 'Take Number'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      )}
     </div>
   );
-}
+};
+
+export default HomePage;
