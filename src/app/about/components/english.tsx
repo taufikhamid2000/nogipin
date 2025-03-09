@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
-const Casual = () => {
+const English = () => {
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-xl">
       <h2 className="text-2xl font-bold text-white mb-4">
@@ -76,4 +76,4 @@ const Casual = () => {
   );
 };
 
-export default Casual;
+export default English;
