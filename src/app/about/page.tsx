@@ -11,6 +11,7 @@ import Einstein from "./components/Einstein";
 import UpinIpin from "./components/UpinIpin";
 import Cat from "./components/Cat";
 import Alien from "./components/Alien";
+import Professor from "./components/professor";
 
 const AboutPage = () => {
   const [selectedVersion, setSelectedVersion] = useState("Melayu");
@@ -32,6 +33,8 @@ const AboutPage = () => {
         return <Cat />;
       case "alien":
         return <Alien />;
+      case "professor": // Added case for Professor
+        return <Professor />;
       default:
         return <Melayu />;
     }
@@ -76,18 +79,7 @@ const AboutPage = () => {
           </button>
 
           {dropdownOpen && (
-            <div
-              className="absolute right-0 mt-2 w-[200px] bg-gray-800 text-white rounded-lg shadow-lg overflow-hidden z-50"
-            >
-              <button
-                onClick={() => {
-                  setSelectedVersion("rant");
-                  setDropdownOpen(false);
-                }}
-                className="block w-full px-4 py-2 text-left hover:bg-gray-700 transition duration-200"
-              >
-                Rant
-              </button>
+            <div className="absolute right-0 mt-2 w-[200px] bg-gray-800 text-white rounded-lg shadow-lg overflow-hidden z-50">
               <button
                 onClick={() => {
                   setSelectedVersion("lawyer");
@@ -133,13 +125,33 @@ const AboutPage = () => {
               >
                 Alien
               </button>
+              <button
+                onClick={() => {
+                  setSelectedVersion("professor");
+                  setDropdownOpen(false);
+                }}
+                className="block w-full px-4 py-2 text-left hover:bg-gray-700 transition duration-200"
+              >
+                Professor
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedVersion("rant");
+                  setDropdownOpen(false);
+                }}
+                className="block w-full px-4 py-2 text-left hover:bg-gray-700 transition duration-200"
+              >
+                Rant
+              </button>
             </div>
           )}
         </div>
       </div>
 
       {/* Content Display */}
-      <div className="bg-gray-800 p-6 rounded-lg shadow-xl">{renderContent()}</div>
+      <div className="bg-gray-800 p-6 rounded-lg shadow-xl">
+        {renderContent()}
+      </div>
 
       {/* Back to Home */}
       <div className="mt-6 flex justify-center">
