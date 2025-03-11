@@ -40,7 +40,9 @@ const StateSelectionPage = () => {
 
   const handleNext = () => {
     if (selectedService && selectedState) {
-      router.push(`/branch-selection?service=${selectedService}&state=${selectedState}`);
+      router.push(
+        `/branch-selection?service=${selectedService}&state=${selectedState}`
+      );
     }
   };
 
@@ -54,7 +56,12 @@ const StateSelectionPage = () => {
     <div className="container mx-auto mt-10 lg:mt-20 p-6 bg-gradient-to-r from-indigo-900 to-blue-800 text-white rounded-lg shadow-lg">
       {/* Breadcrumbs */}
       <nav className="text-gray-300 mb-6">
-        <span className="cursor-pointer hover:text-white" onClick={() => router.push("/")}>Home</span>  
+        <span
+          className="cursor-pointer hover:text-white"
+          onClick={() => router.push("/")}
+        >
+          Home
+        </span>
         {" > "}
         <span className="font-bold">Choose State</span>
       </nav>
@@ -62,10 +69,14 @@ const StateSelectionPage = () => {
       {/* Show selected service */}
       <div className="mb-4 text-center">
         <p className="text-lg">You selected:</p>
-        <p className="text-2xl font-semibold text-yellow-300">{services[selectedService]}</p>
+        <p className="text-2xl font-semibold text-yellow-300">
+          {services[selectedService]}
+        </p>
       </div>
 
-      <h1 className="text-4xl font-semibold text-center mb-8">Choose Your State</h1>
+      <h1 className="text-4xl font-semibold text-center mb-8">
+        Choose Your State
+      </h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {states.map((state) => (
@@ -91,7 +102,7 @@ const StateSelectionPage = () => {
         >
           Back
         </button>
-        
+
         <button
           onClick={handleNext}
           disabled={!selectedState}

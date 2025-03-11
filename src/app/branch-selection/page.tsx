@@ -1,9 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
-// Dummy branch data (Replace with actual API call later)
+// Dummy branch data (Replace with API call later)
 const branches = [
   { id: "branch-1", name: "JPN Shah Alam" },
   { id: "branch-2", name: "JPJ Petaling Jaya" },
@@ -11,41 +11,76 @@ const branches = [
   { id: "branch-4", name: "PDRM Kajang" },
 ];
 
+const services: { [key: string]: string } = {
+  ic: "IC Renewal",
+  license: "Driver's License",
+  passport: "Passport Application",
+  summon: "Summon Payment",
+};
+
 const BranchSelectionPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [selectedState, setSelectedState] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // Prevents rendering before data is set
+  const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
 
   useEffect(() => {
     const service = searchParams.get("service");
     const state = searchParams.get("state");
 
-    if (!service || !state) {
-      router.push("/"); // Redirect to homepage if missing parameters
+    if (!service || !state || !services[service]) {
+      router.push("/"); // Redirect if parameters are missing
     } else {
       setSelectedService(service);
       setSelectedState(state);
-      setLoading(false);
     }
   }, [searchParams, router]);
 
   const handleBranchSelect = (branchId: string) => {
-    router.push(`/queue-status?service=${selectedService}&state=${selectedState}&branch=${branchId}`);
+    setSelectedBranch(branchId);
   };
 
-  if (loading) {
-    return <div className="text-center text-white mt-10">Loading...</div>;
-  }
+  const handleNext = () => {
+    if (selectedService && selectedState && selectedBranch) {
+      router.push(
+        `/queue-status?service=${selectedService}&state=${selectedState}&branch=${selectedBranch}`
+      );
+    }
+  };
+
+  const handleBack = () => {
+    router.push(`/state-selection?service=${selectedService}`);
+  };
+
+  if (!selectedService || !selectedState) return null;
 
   return (
     <div className="container mx-auto mt-10 lg:mt-20 p-6 bg-gradient-to-r from-indigo-900 to-blue-800 text-white rounded-lg shadow-lg">
       {/* Breadcrumbs */}
-      <nav className="mb-6 text-lg">
-        <span className="text-gray-300">Service:</span> <span className="font-semibold">{selectedService}</span> &gt;
-        <span className="text-gray-300 ml-2">State:</span> <span className="font-semibold">{selectedState}</span>
+      <nav className="text-gray-300 mb-6">
+        <span
+          className="cursor-pointer hover:text-white"
+          onClick={() => router.push("/")}
+        >
+          Home
+        </span>
+        {" > "}
+        <span className="cursor-pointer hover:text-white" onClick={handleBack}>
+          Choose State
+        </span>
+        {" > "}
+        <span className="font-bold">Choose Branch</span>
       </nav>
+
+      {/* Show selected service and state */}
+      <div className="mb-4 text-center">
+        <p className="text-lg">You selected:</p>
+        <p className="text-2xl font-semibold text-yellow-300">
+          {services[selectedService]}
+        </p>
+        <p className="text-xl font-semibold text-yellow-200">{selectedState}</p>
+      </div>
 
       <h1 className="text-4xl font-semibold text-center mb-8">
         Choose a Branch
@@ -56,20 +91,36 @@ const BranchSelectionPage = () => {
           <button
             key={branch.id}
             onClick={() => handleBranchSelect(branch.id)}
-            className="p-4 rounded-lg text-xl font-semibold bg-gray-800 text-white hover:bg-blue-500 transition-all"
+            className={`p-4 rounded-lg text-xl font-semibold transition-all ${
+              selectedBranch === branch.id
+                ? "bg-blue-600 text-white scale-105" // Highlight selected branch
+                : "bg-gray-800 text-white hover:bg-blue-500"
+            }`}
           >
             {branch.name}
           </button>
         ))}
       </div>
 
-      {/* Back Button */}
-      <div className="mt-6 flex justify-center">
+      {/* Buttons */}
+      <div className="mt-6 flex justify-between">
         <button
-          onClick={() => router.push(`/state-selection?service=${selectedService}`)}
-          className="px-6 py-3 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 transition duration-300 ease-in-out"
+          onClick={handleBack}
+          className="px-6 py-3 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 transform hover:scale-105 transition duration-300 ease-in-out"
         >
-          &larr; Back to State Selection
+          Back
+        </button>
+
+        <button
+          onClick={handleNext}
+          disabled={!selectedBranch}
+          className={`px-6 py-3 rounded-lg font-medium text-white transition duration-300 ease-in-out ${
+            selectedBranch
+              ? "bg-green-600 hover:bg-green-700 transform hover:scale-105"
+              : "bg-gray-600 cursor-not-allowed"
+          }`}
+        >
+          Next: Queue Status
         </button>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const services = [
   { id: "ic", name: "IC Renewal" },
@@ -21,9 +22,9 @@ const HomePage = () => {
   };
 
   return (
-    <div className="container mx-auto mt-10 lg:mt-20 p-6 bg-gradient-to-r from-indigo-900 to-blue-800 text-white rounded-lg shadow-lg">
+    <div className="container mx-auto min-h-screen overflow-auto mt-10 lg:mt-20 p-6 bg-gradient-to-r from-indigo-900 to-blue-800 text-white rounded-lg shadow-lg">
       <h1 className="text-4xl font-semibold text-center mb-8">
-        Choose a Service
+        Malaysia Integrated E-Queuing System (MIEQS)
       </h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
@@ -33,7 +34,7 @@ const HomePage = () => {
             onClick={() => setSelectedService(service.id)}
             className={`p-4 rounded-lg text-xl font-semibold transition-all ${
               selectedService === service.id
-                ? "bg-blue-600 text-white scale-105" // Highlight selected option
+                ? "bg-blue-600 text-white scale-105"
                 : "bg-gray-800 text-white hover:bg-blue-500"
             }`}
           >
@@ -56,6 +57,16 @@ const HomePage = () => {
           Next: Choose State
         </button>
       </div>
+
+      <section className="mt-6 text-center text-gray-300 text-sm">
+        <p>
+          Need help? Visit our{" "}
+          <Link href="/faq" className="text-yellow-400 underline">
+            About
+          </Link>
+          .
+        </p>
+      </section>
     </div>
   );
 };
