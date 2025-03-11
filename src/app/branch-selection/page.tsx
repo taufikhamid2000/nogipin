@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 // Dummy branch data (Replace with API call later)
@@ -18,7 +18,7 @@ const services: { [key: string]: string } = {
   summon: "Summon Payment",
 };
 
-const BranchSelectionPage = () => {
+const BranchSelectionContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [selectedService, setSelectedService] = useState<string | null>(null);
@@ -93,7 +93,7 @@ const BranchSelectionPage = () => {
             onClick={() => handleBranchSelect(branch.id)}
             className={`p-4 rounded-lg text-xl font-semibold transition-all ${
               selectedBranch === branch.id
-                ? "bg-blue-600 text-white scale-105" // Highlight selected branch
+                ? "bg-blue-600 text-white scale-105"
                 : "bg-gray-800 text-white hover:bg-blue-500"
             }`}
           >
@@ -124,6 +124,14 @@ const BranchSelectionPage = () => {
         </button>
       </div>
     </div>
+  );
+};
+
+const BranchSelectionPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BranchSelectionContent />
+    </Suspense>
   );
 };
 
