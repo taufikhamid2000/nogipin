@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 const states = [
@@ -19,7 +19,7 @@ const services: { [key: string]: string } = {
   summon: "Summon Payment",
 };
 
-const StateSelectionPage = () => {
+const StateSelectionContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [selectedService, setSelectedService] = useState<string | null>(null);
@@ -116,6 +116,14 @@ const StateSelectionPage = () => {
         </button>
       </div>
     </div>
+  );
+};
+
+const StateSelectionPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <StateSelectionContent />
+    </Suspense>
   );
 };
 
