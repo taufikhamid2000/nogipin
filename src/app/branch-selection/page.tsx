@@ -16,6 +16,7 @@ const BranchSelectionPage = () => {
   const router = useRouter();
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [selectedState, setSelectedState] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); // Prevents rendering before data is set
 
   useEffect(() => {
     const service = searchParams.get("service");
@@ -26,6 +27,7 @@ const BranchSelectionPage = () => {
     } else {
       setSelectedService(service);
       setSelectedState(state);
+      setLoading(false);
     }
   }, [searchParams, router]);
 
@@ -33,7 +35,9 @@ const BranchSelectionPage = () => {
     router.push(`/queue-status?service=${selectedService}&state=${selectedState}&branch=${branchId}`);
   };
 
-  if (!selectedService || !selectedState) return null; // Prevent rendering if missing data
+  if (loading) {
+    return <div className="text-center text-white mt-10">Loading...</div>;
+  }
 
   return (
     <div className="container mx-auto mt-10 lg:mt-20 p-6 bg-gradient-to-r from-indigo-900 to-blue-800 text-white rounded-lg shadow-lg">
