@@ -2,128 +2,144 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-
-// Dummy branch data (Replace with API call later)
-const branches = [
-  { id: "branch-1", name: "JPN Shah Alam" },
-  { id: "branch-2", name: "JPJ Petaling Jaya" },
-  { id: "branch-3", name: "JIM Kuala Lumpur" },
-  { id: "branch-4", name: "PDRM Kajang" },
-];
-
-const services: { [key: string]: string } = {
-  ic: "IC Renewal",
-  license: "Driver's License",
-  passport: "Passport Application",
-  summon: "Summon Payment",
-};
+import PageContainer from "@/components/Layout/PageContainer";
+import Header from "@/components/Layout/Header";
+import Breadcrumb from "@/components/Layout/Breadcrumb";
+import SelectionCard from "@/components/Selection/SelectionCard";
+import ActionButtons from "@/components/Layout/ActionButtons";
+import { branches } from "@/data/branches";
+import { departments } from "@/data/departments";
+import { states } from "@/data/states";
+import { getBranchesByDepartmentAndState } from "@/data/branches";
 
 const BranchSelectionContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [selectedService, setSelectedService] = useState<string | null>(null);
-  const [selectedState, setSelectedState] = useState<string | null>(null);
-  const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
+  const [selectedDepartment, setSelectedDepartment] = useState<number | null>(
+    null
+  );
+  const [selectedState, setSelectedState] = useState<number | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
+  const [availableBranches, setAvailableBranches] = useState<typeof branches>(
+    []
+  );
 
   useEffect(() => {
-    const service = searchParams.get("service");
-    const state = searchParams.get("state");
+    const departmentId = searchParams.get("department");
+    const stateId = searchParams.get("state");
 
-    if (!service || !state || !services[service]) {
-      router.push("/"); // Redirect if parameters are missing
-    } else {
-      setSelectedService(service);
-      setSelectedState(state);
+    if (!departmentId || !stateId) {
+      router.push("/");
+      return;
     }
+
+    const deptId = parseInt(departmentId);
+    const stateIdNum = parseInt(stateId);
+
+    const department = departments.find((d) => d.id === deptId);
+    const state = states.find((s) => s.id === stateIdNum);
+
+    if (!department || !state) {
+      router.push("/");
+      return;
+    }
+
+    setSelectedDepartment(deptId);
+    setSelectedState(stateIdNum);
+
+    // Get branches for this department and state
+    const branchesForDeptAndState = getBranchesByDepartmentAndState(
+      deptId,
+      stateIdNum
+    );
+    setAvailableBranches(branchesForDeptAndState);
   }, [searchParams, router]);
 
-  const handleBranchSelect = (branchId: string) => {
+  const handleBranchSelect = (branchId: number) => {
     setSelectedBranch(branchId);
   };
 
   const handleNext = () => {
-    if (selectedService && selectedState && selectedBranch) {
+    if (selectedDepartment && selectedState && selectedBranch) {
       router.push(
-        `/queue-status?service=${selectedService}&state=${selectedState}&branch=${selectedBranch}`
+        `/service-selection?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}`
       );
     }
   };
 
   const handleBack = () => {
-    router.push(`/state-selection?service=${selectedService}`);
+    router.push(`/state-selection?department=${selectedDepartment}`);
   };
 
-  if (!selectedService || !selectedState) return null;
+  if (!selectedDepartment || !selectedState) return null;
+
+  const selectedDepartmentData = departments.find(
+    (d) => d.id === selectedDepartment
+  );
+  const selectedStateData = states.find((s) => s.id === selectedState);
+
+  const breadcrumbItems = [
+    { label: "Home", onClick: () => router.push("/") },
+    {
+      label: "Pilih Negeri",
+      onClick: () =>
+        router.push(`/state-selection?department=${selectedDepartment}`),
+    },
+    { label: "Pilih Lokasi" },
+  ];
 
   return (
-    <div className="container mx-auto mt-10 lg:mt-20 p-6 bg-gradient-to-r from-indigo-900 to-blue-800 text-white rounded-lg shadow-lg">
-      {/* Breadcrumbs */}
-      <nav className="text-gray-300 mb-6">
-        <span
-          className="cursor-pointer hover:text-white"
-          onClick={() => router.push("/")}
-        >
-          Home
-        </span>
-        {" > "}
-        <span className="cursor-pointer hover:text-white" onClick={handleBack}>
-          Choose State
-        </span>
-        {" > "}
-        <span className="font-bold">Choose Branch</span>
-      </nav>
+    <PageContainer>
+      <Breadcrumb items={breadcrumbItems} />
 
-      {/* Show selected service and state */}
-      <div className="mb-4 text-center">
-        <p className="text-lg">You selected:</p>
-        <p className="text-2xl font-semibold text-yellow-300">
-          {services[selectedService]}
-        </p>
-        <p className="text-xl font-semibold text-yellow-200">{selectedState}</p>
+      <Header
+        title="Pilih Lokasi"
+        subtitle={`Pilih lokasi ${selectedDepartmentData?.name} di ${selectedStateData?.name}`}
+      />
+
+      <div className="px-8 py-6">
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-sm text-blue-800">
+            <strong>Jabatan:</strong> {selectedDepartmentData?.full_name}
+          </p>
+          <p className="text-sm text-blue-800">
+            <strong>Negeri:</strong> {selectedStateData?.name}
+          </p>
+        </div>
+
+        {availableBranches.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">
+              Tiada lokasi tersedia untuk jabatan ini di negeri yang dipilih.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {availableBranches.map((branch) => (
+              <SelectionCard
+                key={branch.id}
+                id={branch.id.toString()}
+                title={branch.name}
+                subtitle={branch.address}
+                status={branch.status}
+                distance={branch.distance}
+                queueCount={branch.total_queue}
+                isSelected={selectedBranch === branch.id}
+                onClick={() => handleBranchSelect(branch.id)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      <h1 className="text-4xl font-semibold text-center mb-8">
-        Choose a Branch
-      </h1>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-        {branches.map((branch) => (
-          <button
-            key={branch.id}
-            onClick={() => handleBranchSelect(branch.id)}
-            className={`p-4 rounded-lg text-xl font-semibold transition-all ${
-              selectedBranch === branch.id
-                ? "bg-blue-600 text-white scale-105"
-                : "bg-gray-800 text-white hover:bg-blue-500"
-            }`}
-          >
-            {branch.name}
-          </button>
-        ))}
-      </div>
-
-      {/* Buttons */}
-      <div className="mt-6 flex justify-between">
-        <button
-          onClick={handleBack}
-          className="px-6 py-3 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 transform hover:scale-105 transition duration-300 ease-in-out"
-        >
-          Back
-        </button>
-
-        <button
-          onClick={handleNext}
-          disabled={!selectedBranch}
-          className={`px-6 py-3 rounded-lg font-medium text-white transition duration-300 ease-in-out ${
-            selectedBranch
-              ? "bg-green-600 hover:bg-green-700 transform hover:scale-105"
-              : "bg-gray-600 cursor-not-allowed"
-          }`}
-        >
-          Next: Queue Status
-        </button>
-      </div>
-    </div>
+      <ActionButtons
+        onBack={handleBack}
+        onNext={handleNext}
+        backText="Back"
+        nextText="Next: Pilih Servis"
+        disabled={!selectedBranch}
+      />
+    </PageContainer>
   );
 };
 
