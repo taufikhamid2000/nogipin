@@ -7,36 +7,10 @@ import PageContainer from "@/components/Layout/PageContainer";
 import Header from "@/components/Layout/Header";
 import SelectionCard from "@/components/Selection/SelectionCard";
 import ActionButtons from "@/components/Layout/ActionButtons";
-
-const departments = [
-  {
-    id: "jpn",
-    title: "Jabatan Pendaftaran Negara (JPN)",
-    subtitle: "IC, Passport, and citizenship services",
-    status: "Open",
-  },
-  {
-    id: "jpj",
-    title: "Jabatan Pengangkutan Jalan (JPJ)",
-    subtitle: "Driver's license and vehicle registration",
-    status: "Open",
-  },
-  {
-    id: "jim",
-    title: "Jabatan Imigresen Malaysia (JIM)",
-    subtitle: "Immigration and visa services",
-    status: "Open",
-  },
-  {
-    id: "pdrm",
-    title: "Polis Diraja Malaysia (PDRM)",
-    subtitle: "Police reports and certificates",
-    status: "Open",
-  },
-];
+import { departments } from "@/data/departments";
 
 const HomePage = () => {
-  const [selectedDepartment, setSelectedDepartment] = useState<string | null>(
+  const [selectedDepartment, setSelectedDepartment] = useState<number | null>(
     null
   );
   const router = useRouter();
@@ -59,9 +33,9 @@ const HomePage = () => {
           {departments.map((department) => (
             <SelectionCard
               key={department.id}
-              id={department.id}
-              title={department.title}
-              subtitle={department.subtitle}
+              id={department.id.toString()}
+              title={`${department.full_name} (${department.name})`}
+              subtitle={department.description}
               status={department.status}
               isSelected={selectedDepartment === department.id}
               onClick={() => setSelectedDepartment(department.id)}
