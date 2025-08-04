@@ -2,120 +2,117 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-
-const states = [
-  { id: "selangor", name: "Selangor" },
-  { id: "kuala-lumpur", name: "Kuala Lumpur" },
-  { id: "johor", name: "Johor" },
-  { id: "penang", name: "Penang" },
-  { id: "sabah", name: "Sabah" },
-  { id: "sarawak", name: "Sarawak" },
-];
-
-const services: { [key: string]: string } = {
-  ic: "IC Renewal",
-  license: "Driver's License",
-  passport: "Passport Application",
-  summon: "Summon Payment",
-};
+import PageContainer from "@/components/Layout/PageContainer";
+import Header from "@/components/Layout/Header";
+import Breadcrumb from "@/components/Layout/Breadcrumb";
+import SelectionCard from "@/components/Selection/SelectionCard";
+import ActionButtons from "@/components/Layout/ActionButtons";
+import { states } from "@/data/states";
+import { departments } from "@/data/departments";
+import { getBranchesByDepartment } from "@/data/branches";
 
 const StateSelectionContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [selectedService, setSelectedService] = useState<string | null>(null);
-  const [selectedState, setSelectedState] = useState<string | null>(null);
+  const [selectedDepartment, setSelectedDepartment] = useState<number | null>(
+    null
+  );
+  const [selectedState, setSelectedState] = useState<number | null>(null);
+  const [availableStates, setAvailableStates] = useState<typeof states>([]);
 
   useEffect(() => {
-    const service = searchParams.get("service");
-    if (!service || !services[service]) {
-      router.push("/"); // Redirect to homepage if no service is selected
-    } else {
-      setSelectedService(service);
+    const departmentId = searchParams.get("department");
+    if (!departmentId) {
+      router.push("/");
+      return;
     }
+
+    const deptId = parseInt(departmentId);
+    const department = departments.find((d) => d.id === deptId);
+    if (!department) {
+      router.push("/");
+      return;
+    }
+
+    setSelectedDepartment(deptId);
+
+    // Get states that have branches for this department
+    const departmentBranches = getBranchesByDepartment(deptId);
+    const stateIds = [
+      ...new Set(departmentBranches.map((branch) => branch.state_id)),
+    ];
+    const availableStatesList = states.filter((state) =>
+      stateIds.includes(state.id)
+    );
+    setAvailableStates(availableStatesList);
   }, [searchParams, router]);
 
-  const handleStateSelect = (stateId: string) => {
+  const handleStateSelect = (stateId: number) => {
     setSelectedState(stateId);
   };
 
   const handleNext = () => {
-    if (selectedService && selectedState) {
+    if (selectedDepartment && selectedState) {
       router.push(
-        `/branch-selection?service=${selectedService}&state=${selectedState}`
+        `/branch-selection?department=${selectedDepartment}&state=${selectedState}`
       );
     }
   };
 
   const handleBack = () => {
-    router.push("/"); // Go back to service selection
+    router.push("/");
   };
 
-  if (!selectedService) return null; // Prevent rendering if no service is selected
+  if (!selectedDepartment) return null;
+
+  const selectedDepartmentData = departments.find(
+    (d) => d.id === selectedDepartment
+  );
+
+  const breadcrumbItems = [
+    { label: "Home", onClick: () => router.push("/") },
+    { label: "Pilih Negeri" },
+  ];
 
   return (
-    <div className="container mx-auto mt-10 lg:mt-20 p-6 bg-gradient-to-r from-indigo-900 to-blue-800 text-white rounded-lg shadow-lg">
-      {/* Breadcrumbs */}
-      <nav className="text-gray-300 mb-6">
-        <span
-          className="cursor-pointer hover:text-white"
-          onClick={() => router.push("/")}
-        >
-          Home
-        </span>
-        {" > "}
-        <span className="font-bold">Choose State</span>
-      </nav>
+    <PageContainer>
+      <Breadcrumb items={breadcrumbItems} />
 
-      {/* Show selected service */}
-      <div className="mb-4 text-center">
-        <p className="text-lg">You selected:</p>
-        <p className="text-2xl font-semibold text-yellow-300">
-          {services[selectedService]}
-        </p>
+      <Header
+        title="Pilih Negeri"
+        subtitle={`Pilih negeri untuk ${selectedDepartmentData?.full_name}`}
+      />
+
+      <div className="px-8 py-6">
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-sm text-blue-800">
+            <strong>Jabatan yang dipilih:</strong>{" "}
+            {selectedDepartmentData?.full_name}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {availableStates.map((state) => (
+            <SelectionCard
+              key={state.id}
+              id={state.id.toString()}
+              title={state.name}
+              subtitle={`${state.code} - ${state.name}`}
+              isSelected={selectedState === state.id}
+              onClick={() => handleStateSelect(state.id)}
+            />
+          ))}
+        </div>
       </div>
 
-      <h1 className="text-4xl font-semibold text-center mb-8">
-        Choose Your State
-      </h1>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {states.map((state) => (
-          <button
-            key={state.id}
-            onClick={() => handleStateSelect(state.id)}
-            className={`p-4 rounded-lg text-xl font-semibold transition-all ${
-              selectedState === state.id
-                ? "bg-blue-600 text-white scale-105" // Highlight selected state
-                : "bg-gray-800 text-white hover:bg-blue-500"
-            }`}
-          >
-            {state.name}
-          </button>
-        ))}
-      </div>
-
-      {/* Buttons */}
-      <div className="mt-6 flex justify-between">
-        <button
-          onClick={handleBack}
-          className="px-6 py-3 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 transform hover:scale-105 transition duration-300 ease-in-out"
-        >
-          Back
-        </button>
-
-        <button
-          onClick={handleNext}
-          disabled={!selectedState}
-          className={`px-6 py-3 rounded-lg font-medium text-white transition duration-300 ease-in-out ${
-            selectedState
-              ? "bg-green-600 hover:bg-green-700 transform hover:scale-105"
-              : "bg-gray-600 cursor-not-allowed"
-          }`}
-        >
-          Next: Choose Branch
-        </button>
-      </div>
-    </div>
+      <ActionButtons
+        onBack={handleBack}
+        onNext={handleNext}
+        backText="Back"
+        nextText="Next: Pilih Lokasi"
+        disabled={!selectedState}
+      />
+    </PageContainer>
   );
 };
 
