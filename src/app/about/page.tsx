@@ -1,8 +1,6 @@
-/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import PageContainer from "@/components/Layout/PageContainer";
 import Header from "@/components/Layout/Header";
 import ActionButtons from "@/components/Layout/ActionButtons";
@@ -23,7 +21,7 @@ const AboutPage = () => {
 
   return (
     <PageContainer>
-      <Header 
+      <Header
         title="About MyBeratur"
         subtitle="Learn more about Malaysia's digital queuing system"
       />
@@ -33,8 +31,8 @@ const AboutPage = () => {
           <button
             onClick={() => setSelectedVersion("Melayu")}
             className={`px-4 py-2 rounded-md font-medium transition-colors ${
-              selectedVersion === "Melayu" 
-                ? "bg-blue-600 text-white" 
+              selectedVersion === "Melayu"
+                ? "bg-blue-600 text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
@@ -43,8 +41,8 @@ const AboutPage = () => {
           <button
             onClick={() => setSelectedVersion("english")}
             className={`px-4 py-2 rounded-md font-medium transition-colors ${
-              selectedVersion === "english" 
-                ? "bg-blue-600 text-white" 
+              selectedVersion === "english"
+                ? "bg-blue-600 text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
@@ -52,15 +50,10 @@ const AboutPage = () => {
           </button>
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-6">
-          {renderContent()}
-        </div>
+        <div className="rounded-lg p-6">{renderContent()}</div>
       </div>
 
-      <ActionButtons
-        onBack={() => window.history.back()}
-        backText="Go Back"
-      />
+      <ActionButtons onBack={() => window.history.back()} backText="Go Back" />
     </PageContainer>
   );
 };

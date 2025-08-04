@@ -25,12 +25,12 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = "" }) => {
             {item.href || item.onClick ? (
               <button
                 onClick={item.onClick}
-                className="text-blue-600 hover:text-blue-800 transition-colors"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
               >
                 {item.label}
               </button>
             ) : (
-              <span className="text-gray-500">{item.label}</span>
+              <span className="text-gray-500 dark:text-gray-400">{item.label}</span>
             )}
           </li>
         ))}
