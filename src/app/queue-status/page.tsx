@@ -1,216 +1,295 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import PageContainer from "@/components/Layout/PageContainer";
+import Header from "@/components/Layout/Header";
+import Breadcrumb from "@/components/Layout/Breadcrumb";
+import ActionButtons from "@/components/Layout/ActionButtons";
+import { departments } from "@/data/departments";
+import { states } from "@/data/states";
+import { branches } from "@/data/branches";
+import { services } from "@/data/services";
 
-// Branch info with capacity and crowd status
-const branchData: {
-  [key: string]: {
-    name: string;
-    capacity: number;
-    status: string;
-    alternative?: string;
-  };
-} = {
-  "branch-1": {
-    name: "JPN Klang",
-    capacity: 6,
-    status: "Crowded",
-    alternative: "JPN Shah Alam",
-  },
-  "branch-2": { name: "JPJ Petaling Jaya", capacity: 8, status: "Moderate" },
-  "branch-3": { name: "JIM Kuala Lumpur", capacity: 10, status: "Busy" },
-  "branch-4": { name: "PDRM Kajang", capacity: 4, status: "Light" },
-};
-
-const QueueStatusPage = () => {
-  return (
-    <Suspense
-      fallback={<div className="text-white text-center mt-10">Loading...</div>}
-    >
-      <QueueStatusContent />
-    </Suspense>
-  );
-};
+interface QueueTicket {
+  queueNumber: string;
+  estimatedWaitTime: string;
+  estimatedArrivalTime: string;
+  priority: boolean;
+  timestamp: Date;
+}
 
 const QueueStatusContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [selectedService, setSelectedService] = useState<string | null>(null);
-  const [selectedState, setSelectedState] = useState<string | null>(null);
-  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
-  const [selectedBranchName, setSelectedBranchName] = useState<string | null>(
+  const [selectedDepartment, setSelectedDepartment] = useState<number | null>(
     null
   );
-  const [branchCapacity, setBranchCapacity] = useState<number | null>(null);
-  const [queueStatus, setQueueStatus] = useState<string | null>(null);
-  const [alternativeBranch, setAlternativeBranch] = useState<string | null>(
-    null
+  const [selectedState, setSelectedState] = useState<number | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
+  const [selectedService, setSelectedService] = useState<number | null>(null);
+  const [queueTicket, setQueueTicket] = useState<QueueTicket | null>(null);
+  const [step, setStep] = useState<"confirm" | "ticket" | "complete">(
+    "confirm"
   );
-  const [queueNumber, setQueueNumber] = useState<number | null>(null);
-  const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
-  const [step, setStep] = useState<"queue" | "prefix" | "ticket">("queue");
 
   useEffect(() => {
-    const service = searchParams.get("service");
-    const state = searchParams.get("state");
+    const departmentId = searchParams.get("department");
+    const stateId = searchParams.get("state");
     const branchId = searchParams.get("branch");
+    const serviceId = searchParams.get("service");
 
-    if (!service || !state || !branchId) {
-      router.push("/"); // Redirect if missing parameters
-    } else {
-      setSelectedService(service);
-      setSelectedState(state);
-      setSelectedBranchId(branchId);
-
-      const branchInfo = branchData[branchId];
-      if (branchInfo) {
-        setSelectedBranchName(branchInfo.name);
-        setBranchCapacity(branchInfo.capacity);
-        setQueueStatus(branchInfo.status);
-        setAlternativeBranch(branchInfo.alternative || null);
-      }
+    if (!departmentId || !stateId || !branchId || !serviceId) {
+      router.push("/");
+      return;
     }
+
+    const deptId = parseInt(departmentId);
+    const stateIdNum = parseInt(stateId);
+    const branchIdNum = parseInt(branchId);
+    const serviceIdNum = parseInt(serviceId);
+
+    const department = departments.find((d) => d.id === deptId);
+    const state = states.find((s) => s.id === stateIdNum);
+    const branch = branches.find((b) => b.id === branchIdNum);
+    const service = services.find((s) => s.id === serviceIdNum);
+
+    if (!department || !state || !branch || !service) {
+      router.push("/");
+      return;
+    }
+
+    setSelectedDepartment(deptId);
+    setSelectedState(stateIdNum);
+    setSelectedBranch(branchIdNum);
+    setSelectedService(serviceIdNum);
   }, [searchParams, router]);
 
-  const handleChangeBranch = () => {
-    router.push(
-      `/branch-selection?service=${selectedService}&state=${selectedState}`
+  const generateQueueNumber = () => {
+    const branch = branches.find((b) => b.id === selectedBranch);
+    const service = services.find((s) => s.id === selectedService);
+
+    if (!branch || !service) return;
+
+    // Generate queue number based on branch and current queue
+    const currentQueue = branch.current_queue;
+    const newQueueNumber = currentQueue + 1;
+    const queuePrefix = service.priority ? "P" : "R"; // Priority or Regular
+    const formattedNumber = `${queuePrefix}${branch.id
+      .toString()
+      .padStart(2, "0")}${newQueueNumber.toString().padStart(3, "0")}`;
+
+    // Calculate estimated wait time
+    const estimatedMinutes = Math.ceil(branch.total_queue * 5); // 5 minutes per person
+    const estimatedArrival = new Date();
+    estimatedArrival.setMinutes(
+      estimatedArrival.getMinutes() + estimatedMinutes
     );
-  };
 
-  const handleConfirmStay = () => {
-    setStep("prefix");
-  };
+    const ticket: QueueTicket = {
+      queueNumber: formattedNumber,
+      estimatedWaitTime: `${estimatedMinutes} minutes`,
+      estimatedArrivalTime: estimatedArrival.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      priority: service.priority,
+      timestamp: new Date(),
+    };
 
-  const handleSelectPrefix = (prefix: string) => {
-    const newQueueNumber = 3120 + 31; // Example logic (current number + people in queue)
-    const estimatedMinutes = 135; // Example estimate (2 hours 15 min)
-    const estimatedArrival = "1:32 PM";
-
-    setQueueNumber(newQueueNumber);
-    setEstimatedTime(`${estimatedMinutes} min (${estimatedArrival})`);
+    setQueueTicket(ticket);
     setStep("ticket");
   };
 
   const handleCancel = () => {
-    if (confirm("Are you sure you want to cancel your queue number?")) {
-      router.push("/"); // Redirect back to home
+    if (confirm("Adakah anda pasti mahu membatalkan nombor giliran ini?")) {
+      router.push("/");
     }
   };
 
+  const handleBack = () => {
+    router.push(
+      `/service-selection?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}`
+    );
+  };
+
   if (
-    !selectedService ||
+    !selectedDepartment ||
     !selectedState ||
-    !selectedBranchId ||
-    !selectedBranchName
-  ) {
-    return <div className="text-center text-white mt-10">Loading...</div>;
-  }
+    !selectedBranch ||
+    !selectedService
+  )
+    return null;
+
+  const selectedDepartmentData = departments.find(
+    (d) => d.id === selectedDepartment
+  );
+  const selectedStateData = states.find((s) => s.id === selectedState);
+  const selectedBranchData = branches.find((b) => b.id === selectedBranch);
+  const selectedServiceData = services.find((s) => s.id === selectedService);
+
+  const breadcrumbItems = [
+    { label: "Home", onClick: () => router.push("/") },
+    {
+      label: "Pilih Negeri",
+      onClick: () =>
+        router.push(`/state-selection?department=${selectedDepartment}`),
+    },
+    {
+      label: "Pilih Lokasi",
+      onClick: () =>
+        router.push(
+          `/branch-selection?department=${selectedDepartment}&state=${selectedState}`
+        ),
+    },
+    {
+      label: "Pilih Servis",
+      onClick: () =>
+        router.push(
+          `/service-selection?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}`
+        ),
+    },
+    { label: "Ambil Nombor" },
+  ];
 
   return (
-    <div className="container mx-auto mt-10 lg:mt-20 p-6 bg-gradient-to-r from-indigo-900 to-blue-800 text-white rounded-lg shadow-lg">
-      {/* Breadcrumbs */}
-      <nav className="mb-6 text-lg">
-        <span className="text-gray-300">Service:</span>{" "}
-        <span className="font-semibold">{selectedService}</span> &gt;
-        <span className="text-gray-300 ml-2">State:</span>{" "}
-        <span className="font-semibold">{selectedState}</span> &gt;
-        <span className="text-gray-300 ml-2">Branch:</span>{" "}
-        <span className="font-semibold">{selectedBranchName}</span>
-      </nav>
+    <PageContainer>
+      <Breadcrumb items={breadcrumbItems} />
 
-      <h1 className="text-4xl font-semibold text-center mb-8">
-        Queue Status - {selectedBranchName}
-      </h1>
+      <Header
+        title="Ambil Nombor Giliran"
+        subtitle="Sahkan maklumat dan ambil nombor giliran anda"
+      />
 
-      <div className="text-center text-lg">
-        <p>
-          Branch Capacity: <strong>{branchCapacity} counters</strong>
-        </p>
-        <p>
-          Current Number: <strong>3120</strong>
-        </p>
-        <p>
-          People in Queue: <strong>30</strong>
-        </p>
-        <p>
-          Status:{" "}
-          <span
-            className={
-              queueStatus === "Crowded" ? "text-red-400" : "text-green-400"
-            }
-          >
-            {queueStatus}
-          </span>
-        </p>
+      <div className="px-8 py-6">
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-sm text-blue-800">
+            <strong>Jabatan:</strong> {selectedDepartmentData?.full_name}
+          </p>
+          <p className="text-sm text-blue-800">
+            <strong>Negeri:</strong> {selectedStateData?.name}
+          </p>
+          <p className="text-sm text-blue-800">
+            <strong>Lokasi:</strong> {selectedBranchData?.name}
+          </p>
+          <p className="text-sm text-blue-800">
+            <strong>Servis:</strong> {selectedServiceData?.name}
+          </p>
+        </div>
+
+        {step === "confirm" && (
+          <div className="text-center">
+            <div className="mb-6 p-6 bg-gray-50 rounded-lg border">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Maklumat Giliran
+              </h3>
+              <div className="space-y-2 text-sm text-gray-600">
+                <p>
+                  <strong>Lokasi:</strong> {selectedBranchData?.name}
+                </p>
+                <p>
+                  <strong>Alamat:</strong> {selectedBranchData?.address}
+                </p>
+                <p>
+                  <strong>Waktu Operasi:</strong>{" "}
+                  {selectedBranchData?.operating_hours}
+                </p>
+                <p>
+                  <strong>Nombor Telefon:</strong> {selectedBranchData?.phone}
+                </p>
+                <p>
+                  <strong>Giliran Semasa:</strong>{" "}
+                  {selectedBranchData?.current_queue}
+                </p>
+                <p>
+                  <strong>Jumlah dalam Giliran:</strong>{" "}
+                  {selectedBranchData?.total_queue}
+                </p>
+                <p>
+                  <strong>Anggaran Masa Tunggu:</strong>{" "}
+                  {selectedBranchData?.estimated_wait_time}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={generateQueueNumber}
+                className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Ambil Nombor Giliran
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === "ticket" && queueTicket && (
+          <div className="text-center">
+            <div className="mb-6 p-8 bg-white rounded-lg border-2 border-green-200 shadow-lg">
+              <div className="mb-4">
+                <h3 className="text-2xl font-bold text-green-600 mb-2">
+                  Nombor Giliran Anda
+                </h3>
+                <div className="text-4xl font-bold text-gray-900 mb-4">
+                  {queueTicket.queueNumber}
+                </div>
+                {queueTicket.priority && (
+                  <span className="inline-block px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                    Giliran Keutamaan
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-3 text-sm text-gray-600">
+                <p>
+                  <strong>Anggaran Masa Tunggu:</strong>{" "}
+                  {queueTicket.estimatedWaitTime}
+                </p>
+                <p>
+                  <strong>Anggaran Masa Tiba:</strong>{" "}
+                  {queueTicket.estimatedArrivalTime}
+                </p>
+                <p>
+                  <strong>Masa Ambil Nombor:</strong>{" "}
+                  {queueTicket.timestamp.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+              <p className="text-sm text-yellow-800">
+                <strong>Peringatan:</strong> Sila datang ke lokasi 10 minit
+                sebelum nombor anda dipanggil.
+              </p>
+            </div>
+
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={handleCancel}
+                className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Batalkan Nombor
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Step 1: Crowded Branch Warning */}
-      {step === "queue" && queueStatus === "Crowded" && alternativeBranch && (
-        <div className="mt-6 text-center">
-          <p className="text-yellow-300">
-            The branch seems crowded, would you like to switch to{" "}
-            {alternativeBranch}? (10 minutes away)
-          </p>
-          <div className="mt-4 flex justify-center gap-4">
-            <button
-              onClick={handleChangeBranch}
-              className="px-6 py-3 bg-red-500 hover:bg-red-600 rounded-lg"
-            >
-              Yes, Change Branch
-            </button>
-            <button
-              onClick={handleConfirmStay}
-              className="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg"
-            >
-              No, Stay Here
-            </button>
-          </div>
-        </div>
-      )}
+      <ActionButtons onBack={handleBack} backText="Back" />
+    </PageContainer>
+  );
+};
 
-      {/* Step 2: Select Prefix */}
-      {step === "prefix" && (
-        <div className="mt-6 text-center">
-          <p className="text-yellow-300">Select your queue category:</p>
-          <div className="mt-4 flex justify-center gap-4">
-            <button
-              onClick={() => handleSelectPrefix("priority")}
-              className="px-6 py-3 bg-green-500 hover:bg-green-600 rounded-lg"
-            >
-              Elderly, Disabled & Pregnant
-            </button>
-            <button
-              onClick={() => handleSelectPrefix("general")}
-              className="px-6 py-3 bg-gray-500 hover:bg-gray-600 rounded-lg"
-            >
-              Others
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: Ticket Confirmation */}
-      {step === "ticket" && (
-        <div className="mt-6 text-center">
-          <p>
-            Your number:{" "}
-            <strong className="text-yellow-300">{queueNumber}</strong>
-          </p>
-          <p>
-            Estimated time: <strong>{estimatedTime}</strong>
-          </p>
-          <button
-            onClick={handleCancel}
-            className="mt-4 px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg"
-          >
-            Cancel
-          </button>
-        </div>
-      )}
-    </div>
+const QueueStatusPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <QueueStatusContent />
+    </Suspense>
   );
 };
 
