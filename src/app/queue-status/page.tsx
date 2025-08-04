@@ -10,6 +10,7 @@ import { departments } from "@/data/departments";
 import { states } from "@/data/states";
 import { branches } from "@/data/branches";
 import { services } from "@/data/services";
+import { userCategories } from "@/data/userCategories";
 
 interface QueueTicket {
   queueNumber: string;
@@ -28,6 +29,7 @@ const QueueStatusContent = () => {
   const [selectedState, setSelectedState] = useState<number | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
   const [selectedService, setSelectedService] = useState<number | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [queueTicket, setQueueTicket] = useState<QueueTicket | null>(null);
   const [step, setStep] = useState<"confirm" | "ticket" | "complete">(
     "confirm"
@@ -38,8 +40,9 @@ const QueueStatusContent = () => {
     const stateId = searchParams.get("state");
     const branchId = searchParams.get("branch");
     const serviceId = searchParams.get("service");
+    const categoryId = searchParams.get("category");
 
-    if (!departmentId || !stateId || !branchId || !serviceId) {
+    if (!departmentId || !stateId || !branchId || !serviceId || !categoryId) {
       router.push("/");
       return;
     }
@@ -48,13 +51,15 @@ const QueueStatusContent = () => {
     const stateIdNum = parseInt(stateId);
     const branchIdNum = parseInt(branchId);
     const serviceIdNum = parseInt(serviceId);
+    const categoryIdNum = parseInt(categoryId);
 
     const department = departments.find((d) => d.id === deptId);
     const state = states.find((s) => s.id === stateIdNum);
     const branch = branches.find((b) => b.id === branchIdNum);
     const service = services.find((s) => s.id === serviceIdNum);
+    const category = userCategories.find((c) => c.id === categoryIdNum);
 
-    if (!department || !state || !branch || !service) {
+    if (!department || !state || !branch || !service || !category) {
       router.push("/");
       return;
     }
@@ -63,24 +68,29 @@ const QueueStatusContent = () => {
     setSelectedState(stateIdNum);
     setSelectedBranch(branchIdNum);
     setSelectedService(serviceIdNum);
+    setSelectedCategory(categoryIdNum);
   }, [searchParams, router]);
 
   const generateQueueNumber = () => {
     const branch = branches.find((b) => b.id === selectedBranch);
     const service = services.find((s) => s.id === selectedService);
+    const category = userCategories.find((c) => c.id === selectedCategory);
 
-    if (!branch || !service) return;
+    if (!branch || !service || !category) return;
 
     // Generate queue number based on branch and current queue
     const currentQueue = branch.current_queue;
     const newQueueNumber = currentQueue + 1;
-    const queuePrefix = service.priority ? "P" : "R"; // Priority or Regular
+    const queuePrefix = category.priority ? "P" : "R"; // Priority or Regular based on user category
     const formattedNumber = `${queuePrefix}${branch.id
       .toString()
       .padStart(2, "0")}${newQueueNumber.toString().padStart(3, "0")}`;
 
-    // Calculate estimated wait time
-    const estimatedMinutes = Math.ceil(branch.total_queue * 5); // 5 minutes per person
+    // Calculate estimated wait time (priority users get faster service)
+    const baseWaitTime = Math.ceil(branch.total_queue * 5); // 5 minutes per person
+    const estimatedMinutes = category.priority
+      ? Math.ceil(baseWaitTime * 0.5)
+      : baseWaitTime; // Priority users get 50% faster service
     const estimatedArrival = new Date();
     estimatedArrival.setMinutes(
       estimatedArrival.getMinutes() + estimatedMinutes
@@ -94,7 +104,7 @@ const QueueStatusContent = () => {
         minute: "2-digit",
         hour12: true,
       }),
-      priority: service.priority,
+      priority: category.priority,
       timestamp: new Date(),
     };
 
@@ -110,7 +120,7 @@ const QueueStatusContent = () => {
 
   const handleBack = () => {
     router.push(
-      `/service-selection?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}`
+      `/user-category?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}&service=${selectedService}`
     );
   };
 
@@ -118,7 +128,8 @@ const QueueStatusContent = () => {
     !selectedDepartment ||
     !selectedState ||
     !selectedBranch ||
-    !selectedService
+    !selectedService ||
+    !selectedCategory
   )
     return null;
 
@@ -128,6 +139,9 @@ const QueueStatusContent = () => {
   const selectedStateData = states.find((s) => s.id === selectedState);
   const selectedBranchData = branches.find((b) => b.id === selectedBranch);
   const selectedServiceData = services.find((s) => s.id === selectedService);
+  const selectedCategoryData = userCategories.find(
+    (c) => c.id === selectedCategory
+  );
 
   const breadcrumbItems = [
     { label: "Home", onClick: () => router.push("/") },
@@ -148,6 +162,13 @@ const QueueStatusContent = () => {
       onClick: () =>
         router.push(
           `/service-selection?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}`
+        ),
+    },
+    {
+      label: "Pilih Kategori",
+      onClick: () =>
+        router.push(
+          `/user-category?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}&service=${selectedService}`
         ),
     },
     { label: "Ambil Nombor" },
@@ -175,6 +196,10 @@ const QueueStatusContent = () => {
           </p>
           <p className="text-sm text-blue-800">
             <strong>Servis:</strong> {selectedServiceData?.name}
+          </p>
+          <p className="text-sm text-blue-800">
+            <strong>Kategori:</strong> {selectedCategoryData?.icon}{" "}
+            {selectedCategoryData?.name}
           </p>
         </div>
 
@@ -236,7 +261,7 @@ const QueueStatusContent = () => {
                 </div>
                 {queueTicket.priority && (
                   <span className="inline-block px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
-                    Giliran Keutamaan
+                    {selectedCategoryData?.icon} Giliran Khas - Keutamaan
                   </span>
                 )}
               </div>

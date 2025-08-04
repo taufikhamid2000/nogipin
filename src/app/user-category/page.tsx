@@ -7,13 +7,13 @@ import Header from "@/components/Layout/Header";
 import Breadcrumb from "@/components/Layout/Breadcrumb";
 import SelectionCard from "@/components/Selection/SelectionCard";
 import ActionButtons from "@/components/Layout/ActionButtons";
-import { services } from "@/data/services";
+import { userCategories } from "@/data/userCategories";
 import { departments } from "@/data/departments";
 import { states } from "@/data/states";
 import { branches } from "@/data/branches";
-import { getServicesByDepartment } from "@/data/services";
+import { services } from "@/data/services";
 
-const ServiceSelectionContent = () => {
+const UserCategoryContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [selectedDepartment, setSelectedDepartment] = useState<number | null>(
@@ -22,16 +22,15 @@ const ServiceSelectionContent = () => {
   const [selectedState, setSelectedState] = useState<number | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
   const [selectedService, setSelectedService] = useState<number | null>(null);
-  const [availableServices, setAvailableServices] = useState<typeof services>(
-    []
-  );
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   useEffect(() => {
     const departmentId = searchParams.get("department");
     const stateId = searchParams.get("state");
     const branchId = searchParams.get("branch");
+    const serviceId = searchParams.get("service");
 
-    if (!departmentId || !stateId || !branchId) {
+    if (!departmentId || !stateId || !branchId || !serviceId) {
       router.push("/");
       return;
     }
@@ -39,12 +38,14 @@ const ServiceSelectionContent = () => {
     const deptId = parseInt(departmentId);
     const stateIdNum = parseInt(stateId);
     const branchIdNum = parseInt(branchId);
+    const serviceIdNum = parseInt(serviceId);
 
     const department = departments.find((d) => d.id === deptId);
     const state = states.find((s) => s.id === stateIdNum);
     const branch = branches.find((b) => b.id === branchIdNum);
+    const service = services.find((s) => s.id === serviceIdNum);
 
-    if (!department || !state || !branch) {
+    if (!department || !state || !branch || !service) {
       router.push("/");
       return;
     }
@@ -52,14 +53,11 @@ const ServiceSelectionContent = () => {
     setSelectedDepartment(deptId);
     setSelectedState(stateIdNum);
     setSelectedBranch(branchIdNum);
-
-    // Get services for this department
-    const servicesForDepartment = getServicesByDepartment(deptId);
-    setAvailableServices(servicesForDepartment);
+    setSelectedService(serviceIdNum);
   }, [searchParams, router]);
 
-  const handleServiceSelect = (serviceId: number) => {
-    setSelectedService(serviceId);
+  const handleCategorySelect = (categoryId: number) => {
+    setSelectedCategory(categoryId);
   };
 
   const handleNext = () => {
@@ -67,27 +65,35 @@ const ServiceSelectionContent = () => {
       selectedDepartment &&
       selectedState &&
       selectedBranch &&
-      selectedService
+      selectedService &&
+      selectedCategory
     ) {
       router.push(
-        `/user-category?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}&service=${selectedService}`
+        `/queue-status?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}&service=${selectedService}&category=${selectedCategory}`
       );
     }
   };
 
   const handleBack = () => {
     router.push(
-      `/branch-selection?department=${selectedDepartment}&state=${selectedState}`
+      `/service-selection?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}`
     );
   };
 
-  if (!selectedDepartment || !selectedState || !selectedBranch) return null;
+  if (
+    !selectedDepartment ||
+    !selectedState ||
+    !selectedBranch ||
+    !selectedService
+  )
+    return null;
 
   const selectedDepartmentData = departments.find(
     (d) => d.id === selectedDepartment
   );
   const selectedStateData = states.find((s) => s.id === selectedState);
   const selectedBranchData = branches.find((b) => b.id === selectedBranch);
+  const selectedServiceData = services.find((s) => s.id === selectedService);
 
   const breadcrumbItems = [
     { label: "Home", onClick: () => router.push("/") },
@@ -103,7 +109,14 @@ const ServiceSelectionContent = () => {
           `/branch-selection?department=${selectedDepartment}&state=${selectedState}`
         ),
     },
-    { label: "Pilih Servis" },
+    {
+      label: "Pilih Servis",
+      onClick: () =>
+        router.push(
+          `/service-selection?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}`
+        ),
+    },
+    { label: "Pilih Kategori" },
   ];
 
   return (
@@ -111,8 +124,8 @@ const ServiceSelectionContent = () => {
       <Breadcrumb items={breadcrumbItems} />
 
       <Header
-        title="Pilih Servis"
-        subtitle={`Pilih servis yang anda perlukan di ${selectedBranchData?.name}`}
+        title="Pilih Kategori Pengguna"
+        subtitle="Pilih kategori pengguna anda untuk giliran keutamaan"
       />
 
       <div className="px-8 py-6">
@@ -126,29 +139,32 @@ const ServiceSelectionContent = () => {
           <p className="text-sm text-blue-800">
             <strong>Lokasi:</strong> {selectedBranchData?.name}
           </p>
+          <p className="text-sm text-blue-800">
+            <strong>Servis:</strong> {selectedServiceData?.name}
+          </p>
+        </div>
+
+        <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+          <p className="text-sm text-yellow-800">
+            <strong>Maklumat:</strong> Kategori Khas adalah untuk warga emas,
+            OKU, wanita hamil, dan kanak-kanak. Mereka akan mendapat giliran
+            keutamaan yang lebih cepat.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {availableServices.map((service) => (
+          {userCategories.map((category) => (
             <SelectionCard
-              key={service.id}
-              id={service.id.toString()}
-              title={service.name}
-              subtitle={service.description}
-              status={service.priority ? "Priority" : "Regular"}
-              isSelected={selectedService === service.id}
-              onClick={() => handleServiceSelect(service.id)}
+              key={category.id}
+              id={category.id.toString()}
+              title={`${category.icon} ${category.name}`}
+              subtitle={category.description}
+              status={category.priority ? "Keutamaan" : "Umum"}
+              isSelected={selectedCategory === category.id}
+              onClick={() => handleCategorySelect(category.id)}
             />
           ))}
         </div>
-
-        {availableServices.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-gray-500">
-              Tiada servis tersedia untuk jabatan ini.
-            </p>
-          </div>
-        )}
       </div>
 
       <ActionButtons
@@ -156,18 +172,18 @@ const ServiceSelectionContent = () => {
         onNext={handleNext}
         backText="Back"
         nextText="Next: Ambil Nombor"
-        disabled={!selectedService}
+        disabled={!selectedCategory}
       />
     </PageContainer>
   );
 };
 
-const ServiceSelectionPage = () => {
+const UserCategoryPage = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <ServiceSelectionContent />
+      <UserCategoryContent />
     </Suspense>
   );
 };
 
-export default ServiceSelectionPage;
+export default UserCategoryPage;

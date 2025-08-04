@@ -15,7 +15,7 @@ export const services: Service[] = [
     description: "Renew your Malaysian Identity Card",
     estimated_time: "30-45 minutes",
     priority: false,
-    department_id: 1
+    department_id: 1,
   },
   {
     id: 2,
@@ -23,7 +23,7 @@ export const services: Service[] = [
     description: "Replace lost or damaged IC",
     estimated_time: "45-60 minutes",
     priority: false,
-    department_id: 1
+    department_id: 1,
   },
   {
     id: 3,
@@ -31,7 +31,7 @@ export const services: Service[] = [
     description: "Apply for new passport",
     estimated_time: "60-90 minutes",
     priority: false,
-    department_id: 1
+    department_id: 1,
   },
   {
     id: 4,
@@ -39,15 +39,15 @@ export const services: Service[] = [
     description: "Renew existing passport",
     estimated_time: "45-60 minutes",
     priority: false,
-    department_id: 1
+    department_id: 1,
   },
   {
     id: 5,
     name: "Citizenship Services",
     description: "Citizenship applications and certificates",
     estimated_time: "90-120 minutes",
-    priority: true,
-    department_id: 1
+    priority: false,
+    department_id: 1,
   },
 
   // JPJ Services (department_id: 2)
@@ -57,7 +57,7 @@ export const services: Service[] = [
     description: "Renew your driver's license",
     estimated_time: "30-45 minutes",
     priority: false,
-    department_id: 2
+    department_id: 2,
   },
   {
     id: 7,
@@ -65,7 +65,7 @@ export const services: Service[] = [
     description: "Apply for new driver's license",
     estimated_time: "60-90 minutes",
     priority: false,
-    department_id: 2
+    department_id: 2,
   },
   {
     id: 8,
@@ -73,7 +73,7 @@ export const services: Service[] = [
     description: "Register new vehicle",
     estimated_time: "45-60 minutes",
     priority: false,
-    department_id: 2
+    department_id: 2,
   },
   {
     id: 9,
@@ -81,15 +81,15 @@ export const services: Service[] = [
     description: "Transfer vehicle ownership",
     estimated_time: "60-90 minutes",
     priority: false,
-    department_id: 2
+    department_id: 2,
   },
   {
     id: 10,
     name: "Summon Payment",
     description: "Pay traffic summons",
     estimated_time: "15-30 minutes",
-    priority: true,
-    department_id: 2
+    priority: false,
+    department_id: 2,
   },
 
   // JIM Services (department_id: 3)
@@ -99,7 +99,7 @@ export const services: Service[] = [
     description: "Apply for entry visa",
     estimated_time: "60-90 minutes",
     priority: false,
-    department_id: 3
+    department_id: 3,
   },
   {
     id: 12,
@@ -107,7 +107,7 @@ export const services: Service[] = [
     description: "Renew existing visa",
     estimated_time: "45-60 minutes",
     priority: false,
-    department_id: 3
+    department_id: 3,
   },
   {
     id: 13,
@@ -115,15 +115,15 @@ export const services: Service[] = [
     description: "Apply for work permit",
     estimated_time: "90-120 minutes",
     priority: false,
-    department_id: 3
+    department_id: 3,
   },
   {
     id: 14,
     name: "Passport Stamping",
     description: "Get passport stamped",
     estimated_time: "30-45 minutes",
-    priority: true,
-    department_id: 3
+    priority: false,
+    department_id: 3,
   },
 
   // PDRM Services (department_id: 4)
@@ -132,8 +132,8 @@ export const services: Service[] = [
     name: "Police Report",
     description: "Make a police report",
     estimated_time: "30-45 minutes",
-    priority: true,
-    department_id: 4
+    priority: false,
+    department_id: 4,
   },
   {
     id: 16,
@@ -141,15 +141,15 @@ export const services: Service[] = [
     description: "Apply for good conduct certificate",
     estimated_time: "45-60 minutes",
     priority: false,
-    department_id: 4
+    department_id: 4,
   },
   {
     id: 17,
     name: "Certificate Collection",
     description: "Collect completed certificates",
     estimated_time: "15-30 minutes",
-    priority: true,
-    department_id: 4
+    priority: false,
+    department_id: 4,
   },
   {
     id: 18,
@@ -157,18 +157,18 @@ export const services: Service[] = [
     description: "Fingerprint verification services",
     estimated_time: "30-45 minutes",
     priority: false,
-    department_id: 4
-  }
+    department_id: 4,
+  },
 ];
 
 export const getServiceById = (id: number): Service | undefined => {
-  return services.find(service => service.id === id);
+  return services.find((service) => service.id === id);
 };
 
 export const getServicesByDepartment = (departmentId: number): Service[] => {
-  return services.filter(service => service.department_id === departmentId);
+  return services.filter((service) => service.department_id === departmentId);
 };
 
 export const getPriorityServices = (): Service[] => {
-  return services.filter(service => service.priority);
-}; 
+  return services.filter((service) => service.priority);
+};
