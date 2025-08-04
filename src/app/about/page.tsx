@@ -3,6 +3,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import PageContainer from "@/components/Layout/PageContainer";
+import Header from "@/components/Layout/Header";
+import ActionButtons from "@/components/Layout/ActionButtons";
 import Melayu from "./components/melayu";
 import English from "./components/english";
 
@@ -19,49 +22,46 @@ const AboutPage = () => {
   };
 
   return (
-    <div className="container mx-auto mt-10 lg:mt-20 p-6 bg-gradient-to-r from-indigo-900 to-blue-800 text-white rounded-lg shadow-lg">
-      <h1 className="text-5xl font-semibold text-center text-white mb-8">
-        About MyBeratur
-      </h1>
-      <h5 className="text-1xl font-semibold text-center text-white mb-8">
-        These are AI generated, please don't take them seriously.
-      </h5>
+    <PageContainer>
+      <Header 
+        title="About MyBeratur"
+        subtitle="Learn more about Malaysia's digital queuing system"
+      />
 
-      {/* Language Buttons */}
-      <div className="flex justify-center space-x-3 mb-6">
-        <button
-          onClick={() => setSelectedVersion("Melayu")}
-          className={`px-4 py-2 rounded-lg font-medium text-white ${
-            selectedVersion === "Melayu" ? "bg-blue-600" : "bg-gray-700"
-          } hover:bg-blue-700 transition duration-300`}
-        >
-          Bahasa Malaysia
-        </button>
-        <button
-          onClick={() => setSelectedVersion("english")}
-          className={`px-4 py-2 rounded-lg font-medium text-white ${
-            selectedVersion === "english" ? "bg-blue-600" : "bg-gray-700"
-          } hover:bg-blue-700 transition duration-300`}
-        >
-          English
-        </button>
+      <div className="px-8 py-6">
+        <div className="flex justify-center space-x-3 mb-6">
+          <button
+            onClick={() => setSelectedVersion("Melayu")}
+            className={`px-4 py-2 rounded-md font-medium transition-colors ${
+              selectedVersion === "Melayu" 
+                ? "bg-blue-600 text-white" 
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            Bahasa Malaysia
+          </button>
+          <button
+            onClick={() => setSelectedVersion("english")}
+            className={`px-4 py-2 rounded-md font-medium transition-colors ${
+              selectedVersion === "english" 
+                ? "bg-blue-600 text-white" 
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            English
+          </button>
+        </div>
+
+        <div className="bg-gray-50 rounded-lg p-6">
+          {renderContent()}
+        </div>
       </div>
 
-      {/* Content Display */}
-      <div className="bg-gray-800 p-6 rounded-lg shadow-xl">
-        {renderContent()}
-      </div>
-
-      {/* Back to Home */}
-      <div className="mt-6 flex justify-center">
-        <Link
-          href="/"
-          className="px-6 py-3 rounded-lg font-medium text-white bg-blue-600 hover:bg-blue-700 transform hover:scale-105 transition duration-300 ease-in-out"
-        >
-          Go Back to Homepage
-        </Link>
-      </div>
-    </div>
+      <ActionButtons
+        onBack={() => window.history.back()}
+        backText="Go Back"
+      />
+    </PageContainer>
   );
 };
 

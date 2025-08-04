@@ -3,67 +3,92 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import PageContainer from "@/components/Layout/PageContainer";
+import Header from "@/components/Layout/Header";
+import SelectionCard from "@/components/Selection/SelectionCard";
+import ActionButtons from "@/components/Layout/ActionButtons";
 
-const services = [
-  { id: "ic", name: "IC Renewal" },
-  { id: "license", name: "Driver’s License Renewal" },
-  { id: "passport", name: "Passport Renewal" },
-  { id: "summon", name: "Saman Payment" },
+const departments = [
+  {
+    id: "jpn",
+    title: "Jabatan Pendaftaran Negara (JPN)",
+    subtitle: "IC, Passport, and citizenship services",
+    status: "Open",
+  },
+  {
+    id: "jpj",
+    title: "Jabatan Pengangkutan Jalan (JPJ)",
+    subtitle: "Driver's license and vehicle registration",
+    status: "Open",
+  },
+  {
+    id: "jim",
+    title: "Jabatan Imigresen Malaysia (JIM)",
+    subtitle: "Immigration and visa services",
+    status: "Open",
+  },
+  {
+    id: "pdrm",
+    title: "Polis Diraja Malaysia (PDRM)",
+    subtitle: "Police reports and certificates",
+    status: "Open",
+  },
 ];
 
 const HomePage = () => {
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedDepartment, setSelectedDepartment] = useState<string | null>(
+    null
+  );
   const router = useRouter();
 
   const handleNext = () => {
-    if (selectedService) {
-      router.push(`/state-selection?service=${selectedService}`);
+    if (selectedDepartment) {
+      router.push(`/state-selection?department=${selectedDepartment}`);
     }
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-grow container mx-auto mt-10 lg:mt-20 p-6 bg-gradient-to-r from-indigo-900 to-blue-800 text-white rounded-lg shadow-lg">
-        <h1 className="text-4xl font-semibold text-center mb-8">MyBeratur</h1>
+    <PageContainer>
+      <Header
+        title="MyBeratur"
+        subtitle="Sistem Beratur Digital Malaysia - Pilih Jabatan"
+      />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-          {services.map((service) => (
-            <button
-              key={service.id}
-              onClick={() => setSelectedService(service.id)}
-              className={`p-4 rounded-lg text-xl font-semibold transition-all ${
-                selectedService === service.id
-                  ? "bg-blue-600 text-white scale-105"
-                  : "bg-gray-800 text-white hover:bg-blue-500"
-              }`}
-            >
-              {service.name}
-            </button>
+      <div className="px-8 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {departments.map((department) => (
+            <SelectionCard
+              key={department.id}
+              id={department.id}
+              title={department.title}
+              subtitle={department.subtitle}
+              status={department.status}
+              isSelected={selectedDepartment === department.id}
+              onClick={() => setSelectedDepartment(department.id)}
+            />
           ))}
         </div>
+      </div>
 
-        <div className="mt-6 flex justify-center">
-          <button
-            onClick={handleNext}
-            disabled={!selectedService}
-            className={`px-6 py-3 rounded-lg font-medium text-white transition duration-300 ease-in-out ${
-              selectedService
-                ? "bg-green-600 hover:bg-green-700 transform hover:scale-105"
-                : "bg-gray-600 cursor-not-allowed"
-            }`}
-          >
-            Next: Choose State
-          </button>
-        </div>
-        <p className="text-center text-gray-300 text-sm p-4">
+      <ActionButtons
+        onNext={handleNext}
+        nextText="Next: Pilih Negeri"
+        disabled={!selectedDepartment}
+      />
+
+      <div className="px-8 pb-6 text-center">
+        <p className="text-sm text-gray-500">
           Need help? Visit our{" "}
-          <Link href="/about" className="text-yellow-400 underline">
-            About
+          <Link
+            href="/about"
+            className="text-blue-600 hover:text-blue-800 underline"
+          >
+            About page
           </Link>
           .
         </p>
-      </main>
-    </div>
+      </div>
+    </PageContainer>
   );
 };
 

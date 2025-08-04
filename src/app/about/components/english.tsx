@@ -1,12 +1,12 @@
 /* eslint-disable react/no-unescaped-entities */
 const English = () => {
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-xl">
-      <h2 className="text-2xl font-bold text-white mb-4">
+    <div>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">
         MyBeratur - Malaysia's Digital Queuing System
       </h2>
 
-      <p className="text-gray-300 mb-4 text-lg">
+      <p className="text-gray-700 mb-4 text-lg">
         <strong>
           Ever walked into JPN to renew your IC, took a number, and then
           realized you could've finished a whole Netflix series before your
@@ -14,13 +14,13 @@ const English = () => {
         </strong>
       </p>
 
-      <p className="text-gray-300 mb-4">
+      <p className="text-gray-700 mb-4">
         Or worse—by the time you get there, the tickets are all gone, and they
         hit you with the classic <strong>"Come back tomorrow, boss."</strong>{" "}
         Like, sure, I'll just time-travel back and wake up at 5 AM.
       </p>
 
-      <p className="text-gray-300 mb-4">
+      <p className="text-gray-700 mb-4">
         Well, guess what?{" "}
         <strong>
           Introducing MyBeratur
@@ -31,27 +31,29 @@ const English = () => {
         your existence.
       </p>
 
-      <h3 className="text-xl font-semibold text-white mt-6 mb-3">
+      <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">
         How Does MyBeratur Work?
       </h3>
-      <ul className="list-decimal pl-5 text-gray-300 space-y-2">
+      <ul className="list-decimal pl-5 text-gray-700 space-y-2">
         <li>
-          <strong>Pick a service</strong> – IC renewal, driver's license,
-          passport, paying that one saman you swore wasn't yours, etc.
+          <strong>Choose department</strong> – JPN, JPJ, JIM, PDRM, etc.
         </li>
         <li>
-          <strong>Pick your state</strong> – Because yes, Malaysia is huge.
+          <strong>Select state</strong> – Because yes, Malaysia is huge.
         </li>
         <li>
-          <strong>Pick a branch</strong> – Check how crowded it is{" "}
-          <em>before</em> you go, and grab your number straight from the app.
+          <strong>Pick location</strong> – Check how crowded it is{" "}
+          <em>before</em> you go, and choose the nearest branch.
+        </li>
+        <li>
+          <strong>Select service</strong> – Get your number straight from the app.
         </li>
       </ul>
 
-      <h3 className="text-xl font-semibold text-white mt-6 mb-3">
+      <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">
         Why Choose MyBeratur?
       </h3>
-      <ul className="list-disc pl-5 text-gray-300 space-y-2">
+      <ul className="list-disc pl-5 text-gray-700 space-y-2">
         <li>
           ✅ <strong>Less waiting, more living</strong> – Because life's too
           short for bad queue numbers.
@@ -69,7 +71,7 @@ const English = () => {
         </li>
       </ul>
 
-      <p className="text-gray-300 mt-6 text-lg font-semibold">
+      <p className="text-gray-700 mt-6 text-lg font-semibold">
         MyBeratur - <strong>Making Queuing Easier For Everyone</strong>
       </p>
     </div>
