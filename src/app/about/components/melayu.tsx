@@ -1,8 +1,8 @@
-const Formal = () => {
+const Melayu = () => {
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-xl">
       <h2 className="text-2xl font-bold text-white mb-4">
-        Malaysia Integrated E-Queuing System (MIEQS)
+        MyBeratur - Sistem Beratur Digital Malaysia
       </h2>
 
       <p className="text-gray-300 mb-4">
@@ -22,11 +22,9 @@ const Formal = () => {
       </p>
 
       <p className="text-gray-300 mb-4">
-        <strong>
-          Memperkenalkan Malaysia Integrated E-Queuing System (MIEQS)
-        </strong>{" "}
-        – sebuah sistem penomboran giliran bersepadu untuk{" "}
-        <strong>semua perkhidmatan kerajaan</strong>, termasuk{" "}
+        <strong>Memperkenalkan MyBeratur</strong> – sebuah sistem penomboran
+        giliran digital untuk <strong>semua perkhidmatan kerajaan</strong>,
+        termasuk{" "}
         <strong>
           Jabatan Pendaftaran Negara (JPN), Jabatan Pengangkutan Jalan (JPJ),
           Jabatan Imigresen Malaysia (JIM), Polis Diraja Malaysia (PDRM)
@@ -35,7 +33,7 @@ const Formal = () => {
       </p>
 
       <h3 className="text-xl font-semibold text-white mt-6 mb-3">
-        Bagaimana MIEQS Berfungsi?
+        Bagaimana MyBeratur Berfungsi?
       </h3>
       <ul className="list-decimal pl-5 text-gray-300 space-y-2">
         <li>
@@ -53,7 +51,7 @@ const Formal = () => {
       </ul>
 
       <h3 className="text-xl font-semibold text-white mt-6 mb-3">
-        Manfaat MIEQS:
+        Manfaat MyBeratur:
       </h3>
       <ul className="list-disc pl-5 text-gray-300 space-y-2">
         <li>
@@ -68,6 +66,10 @@ const Formal = () => {
           ✅ <strong>Peningkatan kecekapan operasi</strong> – Agensi kerajaan
           dapat mengurus aliran pelanggan dengan lebih sistematik.
         </li>
+        <li>
+          ✅ <strong>Giliran keutamaan</strong> – Khas untuk warga emas, OKU,
+          dan wanita mengandung.
+        </li>
       </ul>
 
       <p className="text-gray-300 mt-6">
@@ -78,11 +80,10 @@ const Formal = () => {
       </p>
 
       <p className="text-gray-300 mt-4 text-lg font-semibold">
-        Adakah sistem seperti ini perlu dijadikan{" "}
-        <strong>standard dalam semua agensi kerajaan?</strong>
+        MyBeratur - <strong>Membuat Beratur Lebih Mudah Untuk Semua</strong>
       </p>
     </div>
   );
 };
 
-export default Formal;
+export default Melayu;

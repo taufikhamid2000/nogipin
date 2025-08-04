@@ -1,4 +1,15 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MyBeratur
+
+A modern digital queuing system for Malaysian government services. MyBeratur helps citizens manage appointments and queue numbers for various government services like IC renewal, driver's license renewal, passport applications, and summon payments.
+
+## Features
+
+- **Service Selection**: Choose from IC Renewal, Driver's License Renewal, Passport Renewal, and Summon Payment
+- **Geographic Navigation**: Select your state/region (Selangor, KL, Johor, Penang, Sabah, Sarawak)
+- **Branch Selection**: Choose specific government offices (JPN, JPJ, JIM, PDRM branches)
+- **Queue Management**: Get queue numbers, estimated wait times, and real-time status
+- **Smart Recommendations**: Alternative branch suggestions when current branch is crowded
+- **Priority Queues**: Special queue options for elderly, disabled, and pregnant individuals
 
 ## Getting Started
 

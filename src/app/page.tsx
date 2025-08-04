@@ -24,9 +24,7 @@ const HomePage = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow container mx-auto mt-10 lg:mt-20 p-6 bg-gradient-to-r from-indigo-900 to-blue-800 text-white rounded-lg shadow-lg">
-        <h1 className="text-4xl font-semibold text-center mb-8">
-          Malaysia Integrated E-Queuing System (MIEQS)
-        </h1>
+        <h1 className="text-4xl font-semibold text-center mb-8">MyBeratur</h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
           {services.map((service) => (
