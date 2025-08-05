@@ -25,7 +25,7 @@ export const userCategories: UserCategory[] = [
     id: 3,
     name: "VIP",
     description:
-      "Pengguna berbayar untuk keutamaan giliran. Bayaran akan digunakan untuk penambahan staf & sekaligus mengurangkan masa tunggu Umum.",
+      "Pengguna berbayar (tertakhluk kepada polisi jabatan)",
     priority: true,
     icon: "💼",
   },

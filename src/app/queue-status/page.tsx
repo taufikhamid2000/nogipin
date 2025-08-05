@@ -92,13 +92,18 @@ const QueueStatusContent = () => {
 
     if (!branch || !service || !category) return;
 
-    // Generate queue number based on branch and current queue
+    // Generate queue number based on new 8-digit format: {DD}{SS}{BB}{NN}
     const currentQueue = branch.current_queue;
     const newQueueNumber = currentQueue + 1;
-    const queuePrefix = category.priority ? "P" : "R"; // Priority or Regular based on user category
-    const formattedNumber = `${queuePrefix}${branch.id
-      .toString()
-      .padStart(2, "0")}${newQueueNumber.toString().padStart(3, "0")}`;
+
+    // Format: DD (department) + SS (service) + BB (branch) + NN (queue number)
+    const departmentCode =
+      selectedDepartment?.toString().padStart(2, "0") || "00";
+    const serviceCode = selectedService?.toString().padStart(2, "0") || "00";
+    const branchCode = selectedBranch?.toString().padStart(2, "0") || "00";
+    const queueCode = newQueueNumber.toString().padStart(2, "0");
+
+    const formattedNumber = `${departmentCode}${serviceCode}${branchCode}${queueCode}`;
 
     // Calculate estimated wait time (priority users get faster service)
     const baseWaitTime = Math.ceil(branch.total_queue * 5); // 5 minutes per person
@@ -224,6 +229,8 @@ const QueueStatusContent = () => {
     pdf.text("atau lawati:", 20, yPosition);
     yPosition += lineHeight;
     pdf.text(queueTicket.ticketData.checkUrl, 20, yPosition);
+    yPosition += lineHeight;
+    pdf.text("Format nombor: DDSSBBNN (8 digit)", 20, yPosition);
 
     // Add footer
     pdf.setFontSize(8);
@@ -447,6 +454,16 @@ const QueueStatusContent = () => {
                       📄 Muat Turun PDF
                     </button>
                   </div>
+                  <button
+                    onClick={() =>
+                      router.push(
+                        `/direct-queue?queueNumber=${queueTicket.queueNumber}`
+                      )
+                    }
+                    className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                  >
+                    🚀 Giliran Secara Langsung
+                  </button>
                   <p className="text-xs text-gray-500 text-center max-w-xs">
                     Imbas Kod QR atau muat turun PDF untuk simpan maklumat
                     giliran anda
@@ -474,7 +491,7 @@ const QueueStatusContent = () => {
         )}
       </div>
 
-      <ActionButtons onBack={handleBack} backText="Back" />
+      <ActionButtons onBack={handleBack} backText="Kembali" />
     </PageContainer>
   );
 };

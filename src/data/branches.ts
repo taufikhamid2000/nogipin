@@ -86,9 +86,9 @@ export const branches: Branch[] = [
     phone: "03-6201 7000",
     operating_hours: "8:00 pagi - 5:00 petang",
     status: "Buka",
-    current_queue: 25,
-    total_queue: 78,
-    estimated_wait_time: "90 minit",
+    current_queue: 1010518,
+    total_queue: 8,
+    estimated_wait_time: "40 minit",
     distance: "1.2 km dari tempat anda",
   },
   {

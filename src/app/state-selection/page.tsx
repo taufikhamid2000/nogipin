@@ -108,8 +108,8 @@ const StateSelectionContent = () => {
       <ActionButtons
         onBack={handleBack}
         onNext={handleNext}
-        backText="Back"
-        nextText="Next: Pilih Lokasi"
+        backText="Kembali"
+        nextText="Seterusnya: Pilih Lokasi"
         disabled={!selectedState}
       />
     </PageContainer>

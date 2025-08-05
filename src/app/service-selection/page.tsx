@@ -154,8 +154,8 @@ const ServiceSelectionContent = () => {
       <ActionButtons
         onBack={handleBack}
         onNext={handleNext}
-        backText="Back"
-        nextText="Next: Ambil Nombor"
+        backText="Kembali"
+        nextText="Seterusnya: Ambil Nombor"
         disabled={!selectedService}
       />
     </PageContainer>

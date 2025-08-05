@@ -21,6 +21,10 @@ const HomePage = () => {
     }
   };
 
+  const handleCheckQueue = () => {
+    router.push("/direct-queue");
+  };
+
   return (
     <PageContainer>
       <Header
@@ -46,18 +50,30 @@ const HomePage = () => {
 
       <ActionButtons
         onNext={handleNext}
-        nextText="Next: Pilih Negeri"
+        nextText="Seterusnya: Pilih Negeri"
         disabled={!selectedDepartment}
       />
 
+      {/* Subtle Check Queue Number Button below main flow */}
+      <div className="px-8 pt-2 pb-6 text-center">
+        <hr className="my-4" />
+        <p className="text-sm text-gray-500 mb-2">Sudah ada nombor giliran?</p>
+        <button
+          onClick={handleCheckQueue}
+          className="px-4 py-2 bg-gray-100 text-blue-700 rounded border border-gray-300 hover:bg-gray-200 transition-colors text-sm font-medium"
+        >
+          Periksa Nombor Giliran Anda
+        </button>
+      </div>
+
       <div className="px-8 pb-6 text-center">
         <p className="text-sm text-gray-500">
-          Need help? Visit our{" "}
+          Perlukan Bantuan?{" "}
           <Link
             href="/about"
             className="text-blue-600 hover:text-blue-800 underline"
           >
-            About page
+            Klik di sini
           </Link>
           .
         </p>

@@ -68,7 +68,7 @@ const SelectionCard: React.FC<SelectionCardProps> = ({
 
             {queueCount !== undefined && (
               <span className="text-gray-500 dark:text-gray-400">
-                {queueCount} people in queue
+                {queueCount} sedang dalam giliran
               </span>
             )}
           </div>

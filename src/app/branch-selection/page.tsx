@@ -135,8 +135,8 @@ const BranchSelectionContent = () => {
       <ActionButtons
         onBack={handleBack}
         onNext={handleNext}
-        backText="Back"
-        nextText="Next: Pilih Servis"
+        backText="Kembali"
+        nextText="Setereu: Pilih Servis"
         disabled={!selectedBranch}
       />
     </PageContainer>

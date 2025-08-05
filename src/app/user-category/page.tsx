@@ -150,6 +150,11 @@ const UserCategoryContent = () => {
             OKU, wanita hamil, dan kanak-kanak. Mereka akan mendapat giliran
             keutamaan yang lebih cepat.
           </p>
+          <p className="text-sm text-yellow-800">
+            <strong>Maklumat:</strong> Pengguna berbayar untuk keutamaan
+            giliran. Bayaran akan digunakan untuk penambahan staf & sekaligus
+            mengurangkan masa tunggu Umum.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -170,8 +175,8 @@ const UserCategoryContent = () => {
       <ActionButtons
         onBack={handleBack}
         onNext={handleNext}
-        backText="Back"
-        nextText="Next: Ambil Nombor"
+        backText="Kembali"
+        nextText="Seterusnya: Ambil Nombor"
         disabled={!selectedCategory}
       />
     </PageContainer>

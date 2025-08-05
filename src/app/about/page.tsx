@@ -33,7 +33,7 @@ const AboutPage = () => {
             className={`px-4 py-2 rounded-md font-medium transition-colors ${
               selectedVersion === "Melayu"
                 ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
             }`}
           >
             Bahasa Malaysia
@@ -43,17 +43,19 @@ const AboutPage = () => {
             className={`px-4 py-2 rounded-md font-medium transition-colors ${
               selectedVersion === "english"
                 ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
             }`}
           >
             English
           </button>
         </div>
 
-        <div className="rounded-lg p-6">{renderContent()}</div>
+        <div className="rounded-lg p-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+          {renderContent()}
+        </div>
       </div>
 
-      <ActionButtons onBack={() => window.history.back()} backText="Go Back" />
+      <ActionButtons onBack={() => window.history.back()} backText="Kembali" />
     </PageContainer>
   );
 };

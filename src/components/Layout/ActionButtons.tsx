@@ -12,8 +12,8 @@ interface ActionButtonsProps {
 const ActionButtons: React.FC<ActionButtonsProps> = ({
   onBack,
   onNext,
-  backText = "Back",
-  nextText = "Next",
+  backText = "Kembali",
+  nextText = "Seterusnya",
   disabled = false,
   className = ""
 }) => {
