@@ -97,6 +97,13 @@ const BranchSelectionContent = () => {
         subtitle={`Pilih lokasi ${selectedDepartmentData?.name} di ${selectedStateData?.name}`}
       />
 
+      <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+        <p className="text-sm text-yellow-800">
+          Sebahagian Lokasi masih dalam proses integrasi ke sistem MyBeratur.
+          Maaf atas kesulitan.
+        </p>
+      </div>
+
       <div className="px-8 py-6">
         <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm text-blue-800">

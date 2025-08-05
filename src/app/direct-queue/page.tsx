@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { departments } from "@/data/departments";
 import { services } from "@/data/services";
@@ -15,7 +15,7 @@ function decodeQueueNumber(queueNumber: string) {
   };
 }
 
-export default function DirectQueuePage() {
+function DirectQueueContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [queueNumber, setQueueNumber] = useState("");
@@ -231,5 +231,13 @@ export default function DirectQueuePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function DirectQueuePage() {
+  return (
+    <Suspense>
+      <DirectQueueContent />
+    </Suspense>
   );
 }
