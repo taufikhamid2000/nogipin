@@ -51,7 +51,7 @@ const SelectionCard: React.FC<SelectionCardProps> = ({
               <div className="flex items-center">
                 <span
                   className={`w-2 h-2 rounded-full mr-2 ${
-                    status === "Open" ? "bg-green-500" : "bg-red-500"
+                    status === "Open" ? "bg-red-500" : "bg-green-500"
                   }`}
                 ></span>
                 <span className="text-gray-600 dark:text-gray-300">

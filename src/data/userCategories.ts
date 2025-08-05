@@ -21,6 +21,14 @@ export const userCategories: UserCategory[] = [
     priority: true,
     icon: "⭐",
   },
+  {
+    id: 3,
+    name: "VIP",
+    description:
+      "Pengguna berbayar untuk keutamaan giliran. Bayaran akan digunakan untuk penambahan staf & sekaligus mengurangkan masa tunggu Umum.",
+    priority: true,
+    icon: "💼",
+  },
 ];
 
 export const getUserCategoryById = (id: number): UserCategory | undefined => {
