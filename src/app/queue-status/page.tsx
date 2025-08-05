@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { QRCodeCanvas } from "qrcode.react";
+import jsPDF from "jspdf";
 import PageContainer from "@/components/Layout/PageContainer";
 import Header from "@/components/Layout/Header";
 import Breadcrumb from "@/components/Layout/Breadcrumb";
@@ -18,6 +20,18 @@ interface QueueTicket {
   estimatedArrivalTime: string;
   priority: boolean;
   timestamp: Date;
+  ticketData: {
+    department: string;
+    state: string;
+    branch: string;
+    service: string;
+    category: string;
+    queueNumber: string;
+    estimatedWaitTime: string;
+    estimatedArrivalTime: string;
+    timestamp: string;
+    checkUrl: string;
+  };
 }
 
 const QueueStatusContent = () => {
@@ -106,6 +120,22 @@ const QueueStatusContent = () => {
       }),
       priority: category.priority,
       timestamp: new Date(),
+      ticketData: {
+        department: selectedDepartmentData?.full_name || "",
+        state: selectedStateData?.name || "",
+        branch: branch.name,
+        service: service.name,
+        category: category.name,
+        queueNumber: formattedNumber,
+        estimatedWaitTime: `${estimatedMinutes} minutes`,
+        estimatedArrivalTime: estimatedArrival.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        timestamp: new Date().toISOString(),
+        checkUrl: `${window.location.origin}/queue-status?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}&service=${selectedService}&category=${selectedCategory}`,
+      },
     };
 
     setQueueTicket(ticket);
@@ -122,6 +152,104 @@ const QueueStatusContent = () => {
     router.push(
       `/user-category?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}&service=${selectedService}`
     );
+  };
+
+  const downloadTicket = () => {
+    if (!queueTicket) return;
+
+    // Create PDF
+    const pdf = new jsPDF();
+
+    // Add header
+    pdf.setFontSize(20);
+    pdf.setTextColor(34, 139, 34); // Green color
+    pdf.text("Nombor Giliran", 105, 20, { align: "center" });
+
+    // Add queue number
+    pdf.setFontSize(32);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(queueTicket.queueNumber, 105, 40, { align: "center" });
+
+    // Add priority badge if applicable
+    if (queueTicket.priority) {
+      pdf.setFontSize(12);
+      pdf.setTextColor(255, 140, 0); // Orange color
+      pdf.text("⭐ Giliran Khas - Keutamaan", 105, 55, { align: "center" });
+    }
+
+    // Add ticket details
+    pdf.setFontSize(12);
+    pdf.setTextColor(0, 0, 0);
+
+    let yPosition = 80;
+    const lineHeight = 8;
+
+    pdf.text(`Jabatan: ${queueTicket.ticketData.department}`, 20, yPosition);
+    yPosition += lineHeight;
+    pdf.text(`Negeri: ${queueTicket.ticketData.state}`, 20, yPosition);
+    yPosition += lineHeight;
+    pdf.text(`Lokasi: ${queueTicket.ticketData.branch}`, 20, yPosition);
+    yPosition += lineHeight;
+    pdf.text(`Servis: ${queueTicket.ticketData.service}`, 20, yPosition);
+    yPosition += lineHeight;
+    pdf.text(`Kategori: ${queueTicket.ticketData.category}`, 20, yPosition);
+    yPosition += lineHeight * 2;
+
+    pdf.text(
+      `Anggaran Masa Tunggu: ${queueTicket.ticketData.estimatedWaitTime}`,
+      20,
+      yPosition
+    );
+    yPosition += lineHeight;
+    pdf.text(
+      `Anggaran Masa Tiba: ${queueTicket.ticketData.estimatedArrivalTime}`,
+      20,
+      yPosition
+    );
+    yPosition += lineHeight;
+    pdf.text(
+      `Masa Ambil Nombor: ${new Date(
+        queueTicket.ticketData.timestamp
+      ).toLocaleString("ms-MY")}`,
+      20,
+      yPosition
+    );
+    yPosition += lineHeight * 2;
+
+    // Add QR code instructions
+    pdf.setFontSize(10);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text("Imbas QR code untuk semak status giliran", 20, yPosition);
+    yPosition += lineHeight;
+    pdf.text("atau lawati:", 20, yPosition);
+    yPosition += lineHeight;
+    pdf.text(queueTicket.ticketData.checkUrl, 20, yPosition);
+
+    // Add footer
+    pdf.setFontSize(8);
+    pdf.setTextColor(150, 150, 150);
+    pdf.text("Dicetak pada: " + new Date().toLocaleString("ms-MY"), 20, 280);
+
+    // Save PDF
+    pdf.save(`queue-ticket-${queueTicket.queueNumber}.pdf`);
+  };
+
+  const qrCodeRef = useRef<HTMLDivElement>(null);
+
+  const downloadQRCode = () => {
+    if (!qrCodeRef.current) return;
+
+    // Convert QR code to canvas and download
+    const canvas = qrCodeRef.current.querySelector("canvas");
+    if (canvas) {
+      const url = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `qr-ticket-${queueTicket?.queueNumber}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   };
 
   if (
@@ -283,6 +411,47 @@ const QueueStatusContent = () => {
                     hour12: true,
                   })}
                 </p>
+              </div>
+
+              {/* QR Code Section */}
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                  📱 Simpan nombor giliran Anda
+                </h4>
+                <div className="flex flex-col items-center space-y-4">
+                  <div
+                    ref={qrCodeRef}
+                    className="p-4 bg-white rounded-lg border"
+                  >
+                    <QRCodeCanvas
+                      value={JSON.stringify({
+                        ...queueTicket.ticketData,
+                        checkUrl: `${window.location.origin}/queue-status?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}&service=${selectedService}&category=${selectedCategory}`,
+                      })}
+                      size={120}
+                      level="M"
+                      includeMargin={true}
+                    />
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <button
+                      onClick={downloadQRCode}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                    >
+                      📱 Muat Turun Kod QR
+                    </button>
+                    <button
+                      onClick={downloadTicket}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    >
+                      📄 Muat Turun PDF
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 text-center max-w-xs">
+                    Imbas Kod QR atau muat turun PDF untuk simpan maklumat
+                    giliran anda
+                  </p>
+                </div>
               </div>
             </div>
 
