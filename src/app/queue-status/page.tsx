@@ -20,6 +20,8 @@ interface QueueTicket {
   estimatedArrivalTime: string;
   priority: boolean;
   timestamp: Date;
+  isAfterWorkingHours?: boolean;
+  alternativeBranches?: typeof branches;
   ticketData: {
     department: string;
     state: string;
@@ -31,8 +33,68 @@ interface QueueTicket {
     estimatedArrivalTime: string;
     timestamp: string;
     checkUrl: string;
+    isAfterWorkingHours?: boolean;
+    alternativeBranches?: string[];
   };
 }
+
+// Helper function to format minutes into user-friendly time format
+const formatWaitTime = (minutes: number): string => {
+  if (minutes < 60) {
+    return `${minutes} minit`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (remainingMinutes === 0) {
+    return `${hours} jam`;
+  }
+
+  return `${hours} jam ${remainingMinutes} minit`;
+};
+
+// Helper function to check if time is outside working hours
+const isOutsideWorkingHours = (arrivalTime: Date): boolean => {
+  const hours = arrivalTime.getHours();
+  const minutes = arrivalTime.getMinutes();
+  const timeInMinutes = hours * 60 + minutes;
+
+  // Working hours: 8:00 AM (480 minutes) to 5:00 PM (1020 minutes)
+  const workingStartMinutes = 8 * 60; // 8:00 AM
+  const workingEndMinutes = 17 * 60; // 5:00 PM
+
+  // Check if arrival time is on the same day
+  const currentTime = new Date();
+  const isSameDay = arrivalTime.toDateString() === currentTime.toDateString();
+
+  if (isSameDay) {
+    // If it's the same day, check if outside 8 AM - 5 PM
+    return (
+      timeInMinutes < workingStartMinutes || timeInMinutes >= workingEndMinutes
+    );
+  }
+
+  // If it's the next day (crossed midnight), it's definitely outside hours
+  return true;
+};
+
+// Helper function to get alternative branches
+const getAlternativeBranches = (
+  currentBranchId: number,
+  departmentId: number,
+  stateId: number
+) => {
+  return branches
+    .filter(
+      (branch) =>
+        branch.id !== currentBranchId &&
+        branch.department_id === departmentId &&
+        branch.state_id === stateId &&
+        branch.status === "Buka"
+    )
+    .slice(0, 3); // Show top 3 alternatives
+};
 
 const QueueStatusContent = () => {
   const searchParams = useSearchParams();
@@ -115,9 +177,15 @@ const QueueStatusContent = () => {
       estimatedArrival.getMinutes() + estimatedMinutes
     );
 
+    // Check if arrival time is outside working hours
+    const isOutsideHours = isOutsideWorkingHours(estimatedArrival);
+    const alternativeBranches = isOutsideHours
+      ? getAlternativeBranches(branch.id, branch.department_id, branch.state_id)
+      : [];
+
     const ticket: QueueTicket = {
       queueNumber: formattedNumber,
-      estimatedWaitTime: `${estimatedMinutes} minutes`,
+      estimatedWaitTime: formatWaitTime(estimatedMinutes),
       estimatedArrivalTime: estimatedArrival.toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
@@ -125,6 +193,8 @@ const QueueStatusContent = () => {
       }),
       priority: category.priority,
       timestamp: new Date(),
+      isAfterWorkingHours: isOutsideHours,
+      alternativeBranches: alternativeBranches,
       ticketData: {
         department: selectedDepartmentData?.full_name || "",
         state: selectedStateData?.name || "",
@@ -132,7 +202,7 @@ const QueueStatusContent = () => {
         service: service.name,
         category: category.name,
         queueNumber: formattedNumber,
-        estimatedWaitTime: `${estimatedMinutes} minutes`,
+        estimatedWaitTime: formatWaitTime(estimatedMinutes),
         estimatedArrivalTime: estimatedArrival.toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
@@ -140,6 +210,8 @@ const QueueStatusContent = () => {
         }),
         timestamp: new Date().toISOString(),
         checkUrl: `${window.location.origin}/queue-status?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}&service=${selectedService}&category=${selectedCategory}`,
+        isAfterWorkingHours: isOutsideHours,
+        alternativeBranches: alternativeBranches.map((b) => b.name),
       },
     };
 
@@ -201,18 +273,6 @@ const QueueStatusContent = () => {
     yPosition += lineHeight * 2;
 
     pdf.text(
-      `Anggaran Masa Tunggu: ${queueTicket.ticketData.estimatedWaitTime}`,
-      20,
-      yPosition
-    );
-    yPosition += lineHeight;
-    pdf.text(
-      `Anggaran Masa Tiba: ${queueTicket.ticketData.estimatedArrivalTime}`,
-      20,
-      yPosition
-    );
-    yPosition += lineHeight;
-    pdf.text(
       `Masa Ambil Nombor: ${new Date(
         queueTicket.ticketData.timestamp
       ).toLocaleString("ms-MY")}`,
@@ -220,6 +280,40 @@ const QueueStatusContent = () => {
       yPosition
     );
     yPosition += lineHeight * 2;
+    pdf.text(
+      `Anggaran Masa Tiba: ${queueTicket.ticketData.estimatedArrivalTime}`,
+      20,
+      yPosition
+    );
+    yPosition += lineHeight;
+    pdf.text(
+      `Anggaran Masa Menunggu: ${queueTicket.ticketData.estimatedWaitTime}`,
+      20,
+      yPosition
+    );
+    yPosition += lineHeight;
+
+    // Add warning if after working hours
+    if (queueTicket.isAfterWorkingHours) {
+      yPosition += lineHeight;
+      pdf.setFontSize(10);
+      pdf.setTextColor(220, 38, 38); // Red color
+      pdf.text("⚠️ AMARAN: Masa Tiba Selepas Waktu Operasi", 20, yPosition);
+      yPosition += lineHeight;
+      pdf.setFontSize(8);
+      pdf.text(
+        "Anggaran masa tiba melebihi waktu operasi (5:00 petang)",
+        20,
+        yPosition
+      );
+      yPosition += lineHeight;
+      pdf.text(
+        "Cadangan: Batal nombor dan cuba lagi esok atau pilih lokasi lain",
+        20,
+        yPosition
+      );
+      yPosition += lineHeight;
+    }
 
     // Add QR code instructions
     pdf.setFontSize(10);
@@ -373,6 +467,63 @@ const QueueStatusContent = () => {
               </div>
             </div>
 
+            {/* Warning for after working hours */}
+            {(() => {
+              const baseWaitTime = Math.ceil(
+                (selectedBranchData?.total_queue || 0) * 5
+              );
+              const estimatedMinutes = selectedCategoryData?.priority
+                ? Math.ceil(baseWaitTime * 0.5)
+                : baseWaitTime;
+              const estimatedArrival = new Date();
+              estimatedArrival.setMinutes(
+                estimatedArrival.getMinutes() + estimatedMinutes
+              );
+
+              if (isOutsideWorkingHours(estimatedArrival)) {
+                return (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0">
+                        <svg
+                          className="w-5 h-5 text-red-400"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-red-800 mb-2">
+                          ⚠️ Masa Tiba Selepas Waktu Operasi
+                        </h4>
+                        <p className="text-sm text-red-700 mb-3">
+                          Anggaran masa tiba anda adalah{" "}
+                          <strong>
+                            {estimatedArrival.toLocaleTimeString("en-US", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })}
+                          </strong>
+                          , yang melebihi waktu operasi (5:00 petang).
+                        </p>
+                        <p className="text-sm text-red-700">
+                          <strong>Cadangan:</strong> Batal nombor giliran ini
+                          dan cuba lagi esok atau pilih lokasi lain.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+
             <div className="flex justify-center space-x-4">
               <button
                 onClick={generateQueueNumber}
@@ -403,14 +554,6 @@ const QueueStatusContent = () => {
 
               <div className="space-y-3 text-sm text-gray-600">
                 <p>
-                  <strong>Anggaran Masa Tunggu:</strong>{" "}
-                  {queueTicket.estimatedWaitTime}
-                </p>
-                <p>
-                  <strong>Anggaran Masa Tiba:</strong>{" "}
-                  {queueTicket.estimatedArrivalTime}
-                </p>
-                <p>
                   <strong>Masa Ambil Nombor:</strong>{" "}
                   {queueTicket.timestamp.toLocaleTimeString("en-US", {
                     hour: "2-digit",
@@ -418,7 +561,76 @@ const QueueStatusContent = () => {
                     hour12: true,
                   })}
                 </p>
+                <h2>
+                  <strong>
+                    Anggaran Masa Tiba: {queueTicket.estimatedArrivalTime}
+                  </strong>
+                </h2>
+                <p>
+                  <strong>Anggaran Masa Menunggu:</strong>{" "}
+                  {queueTicket.estimatedWaitTime}
+                </p>
               </div>
+
+              {/* Warning for after working hours */}
+              {queueTicket.isAfterWorkingHours && (
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0">
+                      <svg
+                        className="w-5 h-5 text-red-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-red-800 mb-2">
+                        ⚠️ Masa Tiba Selepas Waktu Operasi
+                      </h4>
+                      <p className="text-sm text-red-700 mb-3">
+                        Anggaran masa tiba anda adalah{" "}
+                        <strong>{queueTicket.estimatedArrivalTime}</strong>,
+                        yang melebihi waktu operasi (5:00 petang).
+                        <br />
+                        <strong>Cadangan:</strong>
+                      </p>
+                      <ul className="text-sm text-red-700 space-y-1 mb-3">
+                        <li>• Batal nombor giliran ini dan cuba lagi esok</li>
+                        <li>• Periksa lokasi lain yang mungkin kurang sesak</li>
+                        {queueTicket.alternativeBranches &&
+                          queueTicket.alternativeBranches.length > 0 && (
+                            <li>
+                              • Lokasi alternatif:{" "}
+                              {queueTicket.alternativeBranches
+                                .map((b) => b.name)
+                                .join(", ")}
+                            </li>
+                          )}
+                      </ul>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={handleCancel}
+                          className="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition-colors"
+                        >
+                          Batal Nombor
+                        </button>
+                        <button
+                          onClick={handleBack}
+                          className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors"
+                        >
+                          Pilih Lokasi Lain
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* QR Code Section */}
               <div className="mt-6 p-4 bg-gray-50 rounded-lg">
