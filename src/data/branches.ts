@@ -34,6 +34,21 @@ export const branches: Branch[] = [
     distance: "2.3 km dari tempat anda",
   },
   {
+    id: 14,
+    name: "JPN Klang",
+    department_id: 1,
+    state_id: 10,
+    address:
+      "Ground Floor, Wisma Persekutuan Klang, Persiaran Bukit Raja 1, KU1, 41150 Klang, Selangor",
+    phone: "03-5519 0000",
+    operating_hours: "8:00 pagi - 5:00 petang",
+    status: "Buka",
+    current_queue: 15,
+    total_queue: 5,
+    estimated_wait_time: "10 minit",
+    distance: "1.3 km dari tempat anda",
+  },
+  {
     id: 2,
     name: "JPJ Petaling Jaya",
     department_id: 2,

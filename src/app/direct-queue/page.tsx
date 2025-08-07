@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
+import DarkModeToggle from "@/components/Layout/DarkModeToggle";
 import { departments } from "@/data/departments";
 import { services } from "@/data/services";
 import { branches } from "@/data/branches";
@@ -118,64 +120,86 @@ function DirectQueueContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        <h1 className="text-2xl font-bold mb-4 text-center text-purple-700">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 relative">
+      {/* Dark Mode Toggle */}
+
+      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 relative">
+        <div className="flex justify-center mb-4">
+          <Image
+            src="/favicon.ico"
+            alt="Logo"
+            width={128}
+            height={128}
+            className="rounded-md"
+          />
+        </div>
+        <div className="absolute top-4 right-4">
+          <DarkModeToggle />
+        </div>
+        <h1 className="text-2xl font-bold mb-4 text-center text-purple-700 dark:text-purple-400">
           Giliran Secara Langsung
         </h1>
         {decoded ? (
           <div className="space-y-4">
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-center">
-              <div className="text-3xl font-bold text-green-700 mb-2">
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg text-center">
+              <div className="text-3xl font-bold text-green-700 dark:text-green-400 mb-2">
                 {queueNumber}
               </div>
-              <div className="text-sm text-gray-700 mb-1">
+              <div className="text-sm text-gray-700 dark:text-gray-300 mb-1">
                 Nombor Giliran Anda
               </div>
               <div className="flex flex-col items-center text-sm mt-2">
-                <div>
+                <div className="text-gray-700 dark:text-gray-300">
                   <strong>Jabatan:</strong> {departmentName}
                 </div>
-                <div>
+                <div className="text-gray-700 dark:text-gray-300">
                   <strong>Servis:</strong> {serviceName}
                 </div>
-                <div>
+                <div className="text-gray-700 dark:text-gray-300">
                   <strong>Lokasi:</strong> {branchName}
                 </div>
-                <div>
+                <div className="text-gray-700 dark:text-gray-300">
                   <strong>Giliran:</strong> {decoded.queue}
                 </div>
               </div>
             </div>
 
             {/* Current Queue Status */}
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-semibold text-blue-800">
+                <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300">
                   Status Giliran
                 </h3>
                 <button
                   onClick={handleRefresh}
                   disabled={isRefreshing}
-                  className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+                  className="px-3 py-1 bg-blue-600 dark:bg-blue-700 text-white rounded text-sm hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50"
                 >
                   {isRefreshing ? "⏳" : "🔄"} Segar Semula
                 </button>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Nombor Sekarang:</span>
-                  <span className="font-semibold text-blue-700">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Nombor Sekarang:
+                  </span>
+                  <span className="font-semibold text-blue-700 dark:text-blue-400">
                     {currentQueue}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Jumlah dalam Giliran:</span>
-                  <span className="font-semibold">{totalQueue}</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Jumlah dalam Giliran:
+                  </span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    {totalQueue}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Anggaran Masa Tunggu:</span>
-                  <span className="font-semibold text-orange-600">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Anggaran Masa Tunggu:
+                  </span>
+                  <span className="font-semibold text-orange-600 dark:text-orange-400">
                     {estimatedWaitTime}
                   </span>
                 </div>
@@ -185,13 +209,13 @@ function DirectQueueContent() {
             <div className="flex flex-col space-y-2">
               <button
                 onClick={handleReset}
-                className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors font-semibold"
+                className="w-full bg-purple-600 dark:bg-purple-700 text-white py-2 rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors font-semibold"
               >
                 Semak Nombor Lain
               </button>
               <button
                 onClick={handleGoHome}
-                className="w-full bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 transition-colors font-semibold"
+                className="w-full bg-gray-600 dark:bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors font-semibold"
               >
                 🏠 Kembali ke Laman Utama
               </button>
@@ -201,29 +225,33 @@ function DirectQueueContent() {
           <div className="space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Nombor Giliran
                 </label>
                 <input
                   type="text"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
                   value={queueNumber}
                   onChange={(e) => setQueueNumber(e.target.value)}
                   placeholder="Contoh: 01020305 (8 digit)"
                   maxLength={8}
                 />
               </div>
-              {error && <div className="text-red-600 text-sm">{error}</div>}
+              {error && (
+                <div className="text-red-600 dark:text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
               <button
                 type="submit"
-                className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors font-semibold"
+                className="w-full bg-purple-600 dark:bg-purple-700 text-white py-2 rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors font-semibold"
               >
                 Semak Status
               </button>
             </form>
             <button
               onClick={handleGoHome}
-              className="w-full bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 transition-colors font-semibold"
+              className="w-full bg-gray-600 dark:bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors font-semibold"
             >
               🏠 Kembali ke Laman Utama
             </button>

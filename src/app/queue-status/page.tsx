@@ -227,7 +227,7 @@ const QueueStatusContent = () => {
 
   const handleBack = () => {
     router.push(
-      `/user-category?department=${selectedDepartment}&state=${selectedState}&branch=${selectedBranch}&service=${selectedService}`
+      `/branch-selection?department=${selectedDepartment}&state=${selectedState}`
     );
   };
 
@@ -513,9 +513,15 @@ const QueueStatusContent = () => {
                           , yang melebihi waktu operasi (5:00 petang).
                         </p>
                         <p className="text-sm text-red-700">
-                          <strong>Cadangan:</strong> Batal nombor giliran ini
-                          dan cuba lagi esok atau pilih lokasi lain.
+                          <strong>Cadangan:</strong> Cuba lagi esok atau pilih
+                          lokasi lain.
                         </p>
+                        <button
+                          onClick={handleBack}
+                          className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors"
+                        >
+                          Pilih Lokasi Lain
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -613,13 +619,7 @@ const QueueStatusContent = () => {
                             </li>
                           )}
                       </ul>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={handleCancel}
-                          className="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition-colors"
-                        >
-                          Batal Nombor
-                        </button>
+                      <div className="flex-1 space-x-2">
                         <button
                           onClick={handleBack}
                           className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors"
